@@ -37,7 +37,7 @@ python run.py
 
 ### 🛠️ Технологии
 
-- **Backend**: Python, Aiogram 3, 
+- **Backend**: Python, Aiogram 3, SQLAlchemy 
 - **База данных**:   
 - **Язык программирования**: Python 3.9+  
 - **Контейнеризация**: Docker
