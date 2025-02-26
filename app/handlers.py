@@ -1,10 +1,11 @@
 # handlers.py
-
+import os
 from aiogram.filters import CommandStart, Command
-from aiogram.types import Message, BotCommand
+from aiogram.types import Message, BotCommand, InputFile, BufferedInputFile
 from aiogram import F, Router
 import app.keyboards as kb
 from aiogram import Bot, Dispatcher, types
+
 
 router = Router()
 
@@ -12,20 +13,6 @@ async def set_bot_commands(bot: Bot):
     commands = [BotCommand(command="start", description="Рестарт бота / Обновление меню"),]
     await bot.set_my_commands(commands)
 
-# @router.message(Command('menu'))
-# async def show_menu(message: Message):
-#     logo_text = "🍷🔥🍽️ У камина 🍽️🔥🍷"
-#     text = (
-#         f"{logo_text}\n\n"
-#         "Команда <code>/start</code> - Рестарт бота / Обновление меню"
-#     )
-#     await message.answer(text, parse_mode='HTML', reply_markup=kb.main)
-
-# Обработчик кнопки "🍽️ У камина"
-@router.message(F.text == '🍽️  У камина')
-async def restaurant_description(message: Message):
-    link = "https://telegra.ph/MYZHENATY-03-11-2"
-    await message.answer(link, parse_mode='Markdown', reply_markup=kb.main)
 
 @router.message(CommandStart())
 async def cmd_start(message: Message):
@@ -33,3 +20,42 @@ async def cmd_start(message: Message):
                          reply_markup=kb.main)
 
 
+# Обработчик кнопки '🍽️ У камина'
+@router.message(F.text == '🍽️  У камина')
+async def restaurant_description(message: Message):
+    link = "https://telegra.ph/MYZHENATY-03-11-2"
+    await message.answer(link, parse_mode='Markdown', reply_markup=kb.main)
+
+
+# Обработчик кнопки '📋️ Меню'
+@router.message(F.text == '📋️  Меню')
+async def show_menu_options(message: Message):
+    await message.answer("Выберите нужное вам меню👇",
+                         reply_markup=kb.menu_options_keyboard)
+
+
+# Обработчик кнопки '🍽️ Основное меню'
+@router.message(F.text == '🍽️ Основное меню')
+async def send_main_menu_pdf(message: types.Message):
+    file_path = 'docs/Main_menu.pdf'
+
+    # Создаем BufferedInputFile для загрузки файла
+    pdf = BufferedInputFile.from_file(path=file_path, filename='Main_menu.pdf')
+
+    # Отправляем документ с подписью
+    await message.answer_document(document=pdf, caption="Основное меню центрального зала")
+
+
+
+
+# Обработчик кнопки '👶 Детское меню'
+@router.message(F.text == '👶 Детское меню')
+async def show_menu_kids(message: Message):
+    link = "https://disk.yandex.ru/i/Qat0Y1HO88Arvw"
+    await message.answer(link, parse_mode='Markdown', reply_markup=kb.menu_options_keyboard)
+
+
+# Обработчик кнопки '⬅️ Назад'
+@router.message(F.text == '⬅️ Назад')
+async def back_to_main_menu(message: Message):
+    await message.answer(text="Выберите нужное вам действие👇", reply_markup=kb.main)

@@ -2,15 +2,7 @@
 
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
-# start_keyboard = ReplyKeyboardMarkup(
-#     keyboard=[
-#         [KeyboardButton(text="🚀 Старт")]
-#     ],
-#     resize_keyboard=True
-# )
-
-
-
+# Главная клавиатура
 main = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text='🍽️  У камина'), KeyboardButton(text='📋️  Меню')],
     [KeyboardButton(text='📅🍽️  Забронировать стол')],
@@ -21,6 +13,17 @@ main = ReplyKeyboardMarkup(keyboard=[
 ],
     resize_keyboard=True,
     input_field_placeholder='Выберите действие')
+
+
+# Клавиатура для выбора меню
+menu_options_keyboard = ReplyKeyboardMarkup(keyboard=[
+        [KeyboardButton(text='🍽️ Основное меню')],
+        [KeyboardButton(text='👶 Детское меню')],
+        [KeyboardButton(text='⬅️ Назад')],
+],
+    resize_keyboard=True)
+
+
 
 # settings = InlineKeyboardMarkup(inline_keyboard=[
 #     [InlineKeyboardButton(text='YouTube', url='https://youtube.com')]
