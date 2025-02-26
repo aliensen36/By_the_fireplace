@@ -33,7 +33,7 @@ python -m pip freeze > requirements.txt # Обновление списка за
 python run.py
 ```
 
-Ссылка на бот:   
+Ссылка на бот: https://t.me/Advert202407_bot
 
 ### 🛠️ Технологии
 
