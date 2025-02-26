@@ -38,14 +38,8 @@ async def show_menu_options(message: Message):
 @router.message(F.text == '🍽️ Основное меню')
 async def send_main_menu_pdf(message: types.Message):
     file_path = 'docs/Main_menu.pdf'
-
-    # Создаем BufferedInputFile для загрузки файла
     pdf = BufferedInputFile.from_file(path=file_path, filename='Main_menu.pdf')
-
-    # Отправляем документ с подписью
     await message.answer_document(document=pdf, caption="Основное меню центрального зала")
-
-
 
 
 # Обработчик кнопки '👶 Детское меню'
