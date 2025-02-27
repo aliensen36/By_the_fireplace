@@ -9,10 +9,6 @@ from aiogram import Bot, Dispatcher, types
 
 router = Router()
 
-async def set_bot_commands(bot: Bot):
-    commands = [BotCommand(command="start", description="Рестарт бота / Обновление меню"),]
-    await bot.set_my_commands(commands)
-
 
 @router.message(CommandStart())
 async def cmd_start(message: Message):

@@ -5,7 +5,7 @@ import asyncio
 from dotenv import load_dotenv
 import os
 import logging
-from app.handlers import router, set_bot_commands
+from app.handlers import router
 
 load_dotenv()
 
@@ -17,7 +17,6 @@ dp = Dispatcher()
 
 async def main():
     dp.include_router(router)
-    await set_bot_commands(bot)
     await dp.start_polling(bot)
 
 
