@@ -1,7 +1,7 @@
 # handlers.py
 import os
 from aiogram.filters import CommandStart, Command
-from aiogram.types import Message, BotCommand, InputFile, BufferedInputFile
+from aiogram.types import Message, BotCommand, InputFile, BufferedInputFile, FSInputFile
 from aiogram import F, Router
 import app.keyboards as kb
 from aiogram import Bot, Dispatcher, types
@@ -38,7 +38,7 @@ async def show_menu_options(message: Message):
 @router.message(F.text == '🍽️ Основное меню')
 async def send_main_menu_pdf(message: types.Message):
     file_path = 'docs/Main_menu.pdf'
-    pdf = BufferedInputFile.from_file(path=file_path, filename='Main_menu.pdf')
+    pdf = FSInputFile(path=file_path, filename='Main_menu.pdf')
     await message.answer_document(document=pdf, caption="Основное меню центрального зала")
 
 
