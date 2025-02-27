@@ -1,6 +1,7 @@
 # keyboards.py
 
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton,
+                           InlineKeyboardMarkup, InlineKeyboardButton)
 
 # Главная клавиатура
 main = ReplyKeyboardMarkup(keyboard=[
@@ -14,6 +15,14 @@ main = ReplyKeyboardMarkup(keyboard=[
     resize_keyboard=True,
     input_field_placeholder='Выберите действие')
 
+
+# Клавиатура для выбора пола
+kb_gender = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text='👨🏻‍️ Я парень', callback_data='gender_male')],
+        [InlineKeyboardButton(text='👩🏻‍️ Я девушка', callback_data='gender_female')]
+    ]
+)
 
 # Клавиатура для выбора меню
 menu_options_keyboard = ReplyKeyboardMarkup(keyboard=[

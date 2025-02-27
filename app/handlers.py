@@ -9,7 +9,6 @@ import app.keyboards as kb
 from aiogram import Bot, Dispatcher, types
 
 
-
 router = Router()
 
 
@@ -35,13 +34,19 @@ async def cmd_start(message: Message):
                                  caption=ios_instructions)
         await message.answer_photo(photo=types.FSInputFile(photo_android_path),
                                  caption=android_instructions)
-        await message.answer("🚫 Для взаимодействия с ботом необходимо задать "
+        await message.answer("Для взаимодействия с ботом необходимо задать "
                              "**Username** в настройках Telegram, "
                              "после чего нажмите /start", parse_mode="Markdown")
         return
 
-    await message.answer("Если кнопки скрыты, то нажми на иконку 🎛 в правом нижнем углу рядом с микрофоном 👌",
-                         reply_markup=kb.main)
+    await message.answer("Если кнопки скрыты, то нажми на иконку 🎛 в правом "
+                         "нижнем углу рядом с микрофоном 👌")
+    await message.answer(
+        "Привет дорогой друг✋\n"
+        "Я виртуальный помощник ресторана \"У камина\"\n\n"
+        "Давай познакомимся поближе🤗",
+        reply_markup=kb.kb_gender
+    )
 
 
 # Обработчик кнопки '🍽️ У камина'
