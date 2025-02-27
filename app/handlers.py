@@ -1,10 +1,13 @@
 # handlers.py
 import os
 from aiogram.filters import CommandStart, Command
-from aiogram.types import Message, BotCommand, InputFile, BufferedInputFile, FSInputFile
+from aiogram.methods import SendPhoto
+from aiogram.types import (Message, BotCommand, InputFile, BufferedInputFile,
+                           FSInputFile, InputFile)
 from aiogram import F, Router
 import app.keyboards as kb
 from aiogram import Bot, Dispatcher, types
+
 
 
 router = Router()
@@ -12,6 +15,31 @@ router = Router()
 
 @router.message(CommandStart())
 async def cmd_start(message: Message):
+    # Обработка отсутствия username
+    if not message.from_user.username:
+        photo_ios_path = 'docs/ios_guide.jpg'
+        photo_android_path = 'docs/android_guide.jpg'
+        ios_instructions = (
+            "📱 **IOS**\n\n"
+            "1. Нажмите ⚙️Настройки в правом нижнем углу\n"
+            "2. Нажмите \"Выбрать имя пользователя\"\n"
+            "3. Введите имя пользователя\n"
+        )
+        android_instructions = (
+            "🤖 **Android**\n\n"
+            "1. Нажмите на 3 полоски в левом верхнем углу\n"
+            "2. Нажмите ⚙️Настройки\n"
+            "3. Нажмите на \"Имя пользователя\" и введите имя\n"
+        )
+        await message.answer_photo(photo=types.FSInputFile(photo_ios_path),
+                                 caption=ios_instructions)
+        await message.answer_photo(photo=types.FSInputFile(photo_android_path),
+                                 caption=android_instructions)
+        await message.answer("🚫 Для взаимодействия с ботом необходимо задать "
+                             "**Username** в настройках Telegram, "
+                             "после чего нажмите /start", parse_mode="Markdown")
+        return
+
     await message.answer("Если кнопки скрыты, то нажми на иконку 🎛 в правом нижнем углу рядом с микрофоном 👌",
                          reply_markup=kb.main)
 
