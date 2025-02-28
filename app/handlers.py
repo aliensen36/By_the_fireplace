@@ -1,19 +1,21 @@
 # handlers.py
-import os
-from aiogram.filters import CommandStart, Command
-from aiogram.methods import SendPhoto
-from aiogram.types import (Message, BotCommand, InputFile, BufferedInputFile,
-                           FSInputFile, InputFile)
-from aiogram import F, Router
-import app.keyboards as kb
-from aiogram import Bot, Dispatcher, types
 
+import os
+from aiogram.filters import CommandStart, Command, StateFilter
+from aiogram.types import (Message, BotCommand, InputFile, BufferedInputFile,
+                           FSInputFile, InputFile, CallbackQuery, InlineKeyboardButton,
+                           InlineKeyboardMarkup, Message, PhotoSize)
+from aiogram import F, Router, Bot, Dispatcher, types
+import app.keyboards as kb
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import default_state
+from app.fsm_states import InitialRegistration
 
 router = Router()
 
 
-@router.message(CommandStart())
-async def cmd_start(message: Message):
+@router.message(CommandStart(), StateFilter(default_state))
+async def cmd_start(message: Message, state: FSMContext):
     # Обработка отсутствия username
     if not message.from_user.username:
         photo_ios_path = 'docs/ios_guide.jpg'
@@ -39,14 +41,54 @@ async def cmd_start(message: Message):
                              "после чего нажмите /start", parse_mode="Markdown")
         return
 
-    await message.answer("Если кнопки скрыты, то нажми на иконку 🎛 в правом "
-                         "нижнем углу рядом с микрофоном 👌")
-    await message.answer(
+    welcome_message = await message.answer(
         "Привет дорогой друг✋\n"
         "Я виртуальный помощник ресторана \"У камина\"\n\n"
-        "Давай познакомимся поближе🤗",
-        reply_markup=kb.kb_gender
-    )
+        "Давай познакомимся поближе🤗")
+
+    await state.update_data(welcome_message_id=welcome_message.message_id)
+    await state.set_state(InitialRegistration.choosing_gender)
+    await message.answer("Кто Вы?", reply_markup=kb.kb_gender)
+
+    # await message.answer("Если кнопки скрыты, то нажми на иконку 🎛 в правом "
+    #                          "нижнем углу рядом с микрофоном 👌")
+
+
+# Обработчик выбора пола
+@router.callback_query(F.data.in_(['gender_male', 'gender_female']),
+                       InitialRegistration.choosing_gender)
+async def gender_choice(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    welcome_message_id = data.get("welcome_message_id")
+
+    if welcome_message_id:
+        try:
+            # Удаляем приветственное сообщение
+            await callback.message.bot.delete_message(
+                chat_id=callback.message.chat.id,
+                message_id=welcome_message_id
+            )
+        except Exception as e:
+            print(f"Ошибка удаления сообщения: {e}")
+
+    await state.set_state(InitialRegistration.choosing_profession)  # Переход в следующее состояние
+    await callback.message.edit_text("Здорово! 😃 \n\nРасскажи, чем ты занимаешься?",
+                                     reply_markup=kb.kb_profession)
+    await callback.answer()
+
+
+# Обработчик выбора профессии
+@router.callback_query(F.data.in_(['profession_student', 'profession_business',
+                                   'profession_employed', 'profession_freelancer']),
+                       InitialRegistration.choosing_profession)
+async def profession_choice(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    await state.set_state(InitialRegistration.completed_registration)
+    await callback.message.edit_text("Отлично! Для получения скидки 10% остался "
+                                     "лишь один шаг. Перейди в меню и оформи карту "
+                                     "лояльности.")
+    await callback.answer()
+
 
 
 # Обработчик кнопки '🍽️ У камина'
@@ -82,3 +124,4 @@ async def show_menu_kids(message: Message):
 @router.message(F.text == '⬅️ Назад')
 async def back_to_main_menu(message: Message):
     await message.answer(text="Выберите нужное вам действие👇", reply_markup=kb.main)
+

@@ -24,6 +24,18 @@ kb_gender = InlineKeyboardMarkup(
     ]
 )
 
+
+# Клавиатура для выбора рода занятий
+kb_profession = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text="🎓 Я студент", callback_data="profession_student")],
+        [InlineKeyboardButton(text="💼 Я предприниматель", callback_data="profession_business")],
+        [InlineKeyboardButton(text="🏢 Работаю в найме", callback_data="profession_employed")],
+        [InlineKeyboardButton(text="🖥️ Фрилансер", callback_data="profession_freelancer")]
+    ]
+)
+
+
 # Клавиатура для выбора меню
 menu_options_keyboard = ReplyKeyboardMarkup(keyboard=[
         [KeyboardButton(text='🍽️ Основное меню')],
