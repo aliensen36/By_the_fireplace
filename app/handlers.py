@@ -50,8 +50,6 @@ async def cmd_start(message: Message, state: FSMContext):
     await state.set_state(InitialRegistration.choosing_gender)
     await message.answer("Кто Вы?", reply_markup=kb.kb_gender)
 
-    # await message.answer("Если кнопки скрыты, то нажми на иконку 🎛 в правом "
-    #                          "нижнем углу рядом с микрофоном 👌")
 
 
 # Обработчик выбора пола
@@ -84,11 +82,13 @@ async def gender_choice(callback: CallbackQuery, state: FSMContext):
 async def profession_choice(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     await state.set_state(InitialRegistration.completed_registration)
-    await callback.message.edit_text("Отлично! Для получения скидки 10% остался "
-                                     "лишь один шаг. Перейди в меню и оформи карту "
-                                     "лояльности.")
+    await callback.message.edit_text("Отлично! 👍 \nДля получения скидки 10% остался "
+                                     "лишь один шаг.\nПерейди в меню и оформи карту "
+                                     "лояльности 💳")
+    await callback.message.answer("Если кнопки скрыты, то нажми на иконку 🎛 "
+                                  "в правом нижнем углу рядом с микрофоном 👌",
+                                  reply_markup=kb.main)
     await callback.answer()
-
 
 
 # Обработчик кнопки '🍽️ У камина'
