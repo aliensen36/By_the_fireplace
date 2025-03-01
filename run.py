@@ -1,37 +1,58 @@
 # python run.py
 
-from aiogram import Bot, Dispatcher
-import asyncio
-from dotenv import load_dotenv
 import os
+import asyncio
+
+from aiogram import Bot, Dispatcher, types
+
+from dotenv import load_dotenv
+load_dotenv()
+
 import logging
-from app.handlers import router
+from app.bot_cmds_list import bot_cmds_list
+from database.engine import create_db, drop_db
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.state import default_state, State, StatesGroup
 
-load_dotenv()
+from app.handlers.handlers import router
+from app.handlers.start_handler import start_router
+
+logging.basicConfig(level=logging.INFO)
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 
-storage = MemoryStorage()
-
 bot = Bot(BOT_TOKEN)
-dp = Dispatcher(storage=storage)
+bot.admins_list = []
 
-user_dict: dict[int, dict[str, str | int | bool]] = {}
+dp = Dispatcher(storage=MemoryStorage())
 
+dp.include_router(start_router)
+dp.include_router(router)
 
+async def on_startup(bot):
+    run_param = False
+    if run_param:
+        await drop_db()
+    await create_db()
+    logging.info("Бот успешно запущен. https://t.me/Advert202407_bot")
 
 async def main():
-    dp.include_router(router)
+    dp.startup.register(on_startup)
+    await bot.delete_webhook(drop_pending_updates=True)
+    await bot.set_my_commands(commands=bot_cmds_list, scope=types.BotCommandScopeAllPrivateChats())
     await dp.start_polling(bot)
 
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-    print("https://t.me/Advert202407_bot")
+if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print('Бот завершил работу')
+        logging.info("Бот остановлен.")
+    except Exception as e:
+        logging.error(f"Ошибка: {e}")
+
+
+
+
+
+
 
