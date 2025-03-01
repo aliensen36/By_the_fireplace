@@ -22,4 +22,11 @@ menu_options_keyboard = ReplyKeyboardMarkup(keyboard=[
     resize_keyboard=True)
 
 
+# Клавиатура для программы лояльности
+loyalty_program_keyboard = ReplyKeyboardMarkup(keyboard=[
+        [KeyboardButton(text='💳 Карта лояльности')],
+        [KeyboardButton(text='👥 Пригласи друга')],
+        [KeyboardButton(text='⬅️ Назад')],
+],
+    resize_keyboard=True)
 
