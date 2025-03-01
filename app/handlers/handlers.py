@@ -1,5 +1,5 @@
 from aiogram.types import (FSInputFile, Message, InlineKeyboardMarkup, InlineKeyboardButton)
-from aiogram import F, Router, types
+from aiogram import F, Router, types, Bot
 import app.keyboards.reply as reply_kb
 import app.keyboards.inline as inline_kb
 
@@ -75,7 +75,7 @@ async def loyalty_program(message: Message):
 
 # Обработчик кнопки '👥 Пригласи друга'
 @router.message(F.text == '👥 Пригласи друга')
-async def invite_friend(message: Message):
+async def invite_friend(message: Message, bot: Bot):
     text_1 = ("✅ Используйте ссылку ниже, чтобы пригласить друзей в бот.\n\n"
             "Бонус за приглашение друга активируется, когда ваш друг оформит "
             "карту лояльности, находясь в нашем ресторане.\n\n)"
@@ -83,10 +83,12 @@ async def invite_friend(message: Message):
             "если ваш друг в момент приглашения уже находится в нашем ресторане.")
     await message.answer(text_1)
     url = "https://t.me/myzhenatybot?start=5930bf6439955aa9917a2c30bc9aff2c"
-    text_2 = ("Ссылка для приглашения.\n\nСсылку можно передать как в Telegram, "
-              "так и за его пределы.\n\n{url}")
-    button = InlineKeyboardButton("Отправить ссылку в ЛС", url=f"t.me/{message.bot.username}?start={url}")
-    keyboard = InlineKeyboardMarkup().add(button)
+    text_2 = f"Ссылка для приглашения.\n\nСсылку можно передать как в Telegram, " \
+             f"так и за его пределы.\n\n{url}"
+    button = InlineKeyboardButton(text="Отправить ссылку в ЛС",
+                                  switch_inline_query=f"\n\nПриглашаю тебя в бот ресторана "
+                                                      f"«У камина»!\n\nПерейди по ссылке:\n\n{url}")
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button]])
     await message.answer(text_2, reply_markup=keyboard)
 
 
