@@ -10,10 +10,10 @@ load_dotenv()
 
 import logging
 from app.bot_cmds_list import bot_cmds_list
-from database.engine import create_db, drop_db
+from database.engine import create_db, drop_db, session_maker
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.state import default_state, State, StatesGroup
-
+from middlewares.db import DataBaseSession
 from app.handlers.handlers import router
 from app.handlers.start_handler import start_router
 
@@ -38,6 +38,7 @@ async def on_startup(bot):
 
 async def main():
     dp.startup.register(on_startup)
+    dp.update.middleware(DataBaseSession(session_pool=session_maker))
     await bot.delete_webhook(drop_pending_updates=True)
     await bot.set_my_commands(commands=bot_cmds_list, scope=types.BotCommandScopeAllPrivateChats())
     await dp.start_polling(bot)
