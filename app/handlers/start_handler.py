@@ -15,6 +15,18 @@ start_router = Router()
 
 @start_router.message(CommandStart(), StateFilter(default_state))
 async def cmd_start(message: Message, state: FSMContext):
+    user_id = message.from_user.id
+
+    async with session_maker() as session:
+        result = await session.execute(select(User).where(User.tg_id == user_id))
+        user = result.scalars().first()
+
+    if user:
+        # Если пользователь уже зарегистрирован → показ главного меню
+        await message.answer("Добро пожаловать! 🎉\nС возвращением!",
+                             reply_markup=reply_kb.main)
+        return
+
     # Обработка отсутствия username
     if not message.from_user.username:
         photo_ios_path = 'docs/ios_guide.jpg'
