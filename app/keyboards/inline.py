@@ -4,8 +4,8 @@ from aiogram.types import (InlineKeyboardMarkup, InlineKeyboardButton)
 # Клавиатура для выбора пола
 kb_gender = InlineKeyboardMarkup(
     inline_keyboard=[
-        [InlineKeyboardButton(text='👨🏻‍️ Я парень', callback_data='gender_male')],
-        [InlineKeyboardButton(text='👩🏻‍️ Я девушка', callback_data='gender_female')]
+        [InlineKeyboardButton(text='👨🏻‍️ Я парень', callback_data='male')],
+        [InlineKeyboardButton(text='👩🏻‍️ Я девушка', callback_data='female')]
     ]
 )
 
@@ -13,9 +13,9 @@ kb_gender = InlineKeyboardMarkup(
 # Клавиатура для выбора рода занятий
 kb_profession = InlineKeyboardMarkup(
     inline_keyboard=[
-        [InlineKeyboardButton(text="🎓 Я студент", callback_data="profession_student")],
-        [InlineKeyboardButton(text="💼 Я предприниматель", callback_data="profession_business")],
-        [InlineKeyboardButton(text="🏢 Работаю в найме", callback_data="profession_employed")],
-        [InlineKeyboardButton(text="🖥️ Фрилансер", callback_data="profession_freelancer")]
+        [InlineKeyboardButton(text="🎓 Я студент", callback_data="student")],
+        [InlineKeyboardButton(text="💼 Я предприниматель", callback_data="businessman")],
+        [InlineKeyboardButton(text="🏢 Работаю в найме", callback_data="employee")],
+        [InlineKeyboardButton(text="🖥️ Фрилансер", callback_data="freelancer")]
     ]
 )

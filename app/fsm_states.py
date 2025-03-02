@@ -3,6 +3,6 @@
 from aiogram.fsm.state import State, StatesGroup
 
 class InitialRegistration(StatesGroup):
-    choosing_gender = State()
-    choosing_profession = State()
+    gender = State()
+    profession = State()
     completed_registration = State()

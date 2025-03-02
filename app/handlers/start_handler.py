@@ -3,9 +3,15 @@ from aiogram.types import (CallbackQuery, Message)
 from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
+from sqlalchemy import update, insert, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.fsm_states import InitialRegistration
 import app.keyboards.reply as reply_kb
 import app.keyboards.inline as inline_kb
+from database.engine import session_maker
+from database.models import User
+
 start_router = Router()
 
 
@@ -42,14 +48,13 @@ async def cmd_start(message: Message, state: FSMContext):
         "Давай познакомимся поближе🤗")
 
     await state.update_data(welcome_message_id=welcome_message.message_id)
-    await state.set_state(InitialRegistration.choosing_gender)
+    await state.set_state(InitialRegistration.gender)
     await message.answer("Кто Вы?", reply_markup=inline_kb.kb_gender)
 
 
 
 # Обработчик выбора пола
-@start_router.callback_query(F.data.in_(['gender_male', 'gender_female']),
-                       InitialRegistration.choosing_gender)
+@start_router.callback_query(StateFilter(InitialRegistration.gender), F.data.in_(['male', 'female']))
 async def gender_choice(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     welcome_message_id = data.get("welcome_message_id")
@@ -64,19 +69,52 @@ async def gender_choice(callback: CallbackQuery, state: FSMContext):
         except Exception as e:
             print(f"Ошибка удаления сообщения: {e}")
 
-    await state.set_state(InitialRegistration.choosing_profession)  # Переход в следующее состояние
+    # Сохраняем пол в FSMContext
+    await state.update_data(gender=callback.data)
+
+    # Переход в следующее состояние
+    await state.set_state(InitialRegistration.profession)
+
     await callback.message.edit_text("Здорово! 😃 \n\nРасскажи, чем ты занимаешься?",
                                      reply_markup=inline_kb.kb_profession)
     await callback.answer()
 
 
+
 # Обработчик выбора профессии
-@start_router.callback_query(F.data.in_(['profession_student', 'profession_business',
-                                   'profession_employed', 'profession_freelancer']),
-                       InitialRegistration.choosing_profession)
+@start_router.callback_query(StateFilter(InitialRegistration.profession),
+                             F.data.in_(['student', 'businessman',
+                                         'employee', 'freelancer']))
 async def profession_choice(callback: CallbackQuery, state: FSMContext):
-    data = await state.get_data()
-    await state.set_state(InitialRegistration.completed_registration)
+    async with session_maker() as session:
+        async with session.begin():  # Начинаем транзакцию
+            user_data = await state.get_data()
+            user_id = callback.from_user.id
+            profession = callback.data
+            gender = user_data.get("gender")
+
+            # Проверяем, существует ли пользователь
+            result = await session.execute(select(User).where(User.tg_id == user_id))
+            user = result.scalars().first()
+
+            if user:
+                # Если пользователь уже есть, обновляем
+                stmt = (
+                    update(User)
+                    .where(User.tg_id == user_id)
+                    .values(profession=profession, gender=gender)
+                )
+                await session.execute(stmt)
+            else:
+                # Если пользователя нет, создаём новую запись
+                stmt = insert(User).values(tg_id=user_id, profession=profession, gender=gender)
+                await session.execute(stmt)
+
+            await session.commit()  # Фиксируем изменения
+
+    # Завершаем регистрацию
+    await state.clear()
+
     await callback.message.edit_text("Отлично! 👍 \nДля получения скидки 10% остался "
                                      "лишь один шаг.\nПерейди в меню и оформи карту "
                                      "лояльности 💳")
