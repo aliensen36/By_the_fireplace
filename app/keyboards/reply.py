@@ -30,3 +30,10 @@ loyalty_program_keyboard = ReplyKeyboardMarkup(keyboard=[
 ],
     resize_keyboard=True)
 
+
+# Кнопка "Отмена"
+cancel_keyboard = ReplyKeyboardMarkup(keyboard=[
+        [KeyboardButton(text='Отмена')],
+],
+    resize_keyboard=True)
+

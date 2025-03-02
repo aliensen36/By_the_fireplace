@@ -1,5 +1,5 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import BigInteger, String, DateTime, func
+from sqlalchemy import BigInteger, String, DateTime, func, Integer
 
 
 class Base(DeclarativeBase):
@@ -9,9 +9,11 @@ class Base(DeclarativeBase):
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     tg_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String, nullable=True)
     gender: Mapped[str] = mapped_column(String, nullable=True)
     profession: Mapped[str] = mapped_column(String, nullable=True)
-    age: Mapped[int] = mapped_column(BigInteger, nullable=True)
+    age_group: Mapped[str] = mapped_column(String, nullable=True)
+    place_of_residence: Mapped[str] = mapped_column(String, nullable=True)
+    alone_or_company: Mapped[str] = mapped_column(String, nullable=True)

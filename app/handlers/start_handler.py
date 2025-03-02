@@ -4,7 +4,7 @@ from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from sqlalchemy import update, insert, select
-from app.fsm_states import InitialRegistration
+from app.fsm_states import Registration
 import app.keyboards.reply as reply_kb
 import app.keyboards.inline as inline_kb
 from database.engine import session_maker
@@ -58,12 +58,12 @@ async def cmd_start(message: Message, state: FSMContext):
         "Давай познакомимся поближе🤗")
 
     await state.update_data(welcome_message_id=welcome_message.message_id)
-    await state.set_state(InitialRegistration.gender)
+    await state.set_state(Registration.gender)
     await message.answer("Кто Вы?", reply_markup=inline_kb.kb_gender)
 
 
 # Обработчик выбора пола
-@start_router.callback_query(StateFilter(InitialRegistration.gender), F.data.in_(['male', 'female']))
+@start_router.callback_query(StateFilter(Registration.gender), F.data.in_(['male', 'female']))
 async def gender_choice(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     welcome_message_id = data.get("welcome_message_id")
@@ -79,14 +79,14 @@ async def gender_choice(callback: CallbackQuery, state: FSMContext):
             print(f"Ошибка удаления сообщения: {e}")
 
     await state.update_data(gender=callback.data)
-    await state.set_state(InitialRegistration.profession)
+    await state.set_state(Registration.profession)
     await callback.message.edit_text("Здорово! 😃 \n\nРасскажи, чем ты занимаешься?",
                                      reply_markup=inline_kb.kb_profession)
     await callback.answer()
 
 
 # Обработчик выбора профессии
-@start_router.callback_query(StateFilter(InitialRegistration.profession),
+@start_router.callback_query(StateFilter(Registration.profession),
                              F.data.in_(['student', 'businessman',
                                          'employee', 'freelancer']))
 async def profession_choice(callback: CallbackQuery, state: FSMContext):

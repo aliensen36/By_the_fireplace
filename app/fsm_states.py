@@ -1,6 +1,8 @@
 from aiogram.fsm.state import State, StatesGroup
 
-class InitialRegistration(StatesGroup):
+class Registration(StatesGroup):
     gender = State()
     profession = State()
-    completed_registration = State()
+    age_group = State()
+    place_of_residence = State()
+    alone_or_company = State()
