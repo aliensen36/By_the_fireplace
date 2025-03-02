@@ -4,8 +4,6 @@ from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from sqlalchemy import update, insert, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.fsm_states import InitialRegistration
 import app.keyboards.reply as reply_kb
 import app.keyboards.inline as inline_kb
@@ -52,7 +50,6 @@ async def cmd_start(message: Message, state: FSMContext):
     await message.answer("Кто Вы?", reply_markup=inline_kb.kb_gender)
 
 
-
 # Обработчик выбора пола
 @start_router.callback_query(StateFilter(InitialRegistration.gender), F.data.in_(['male', 'female']))
 async def gender_choice(callback: CallbackQuery, state: FSMContext):
@@ -61,7 +58,7 @@ async def gender_choice(callback: CallbackQuery, state: FSMContext):
 
     if welcome_message_id:
         try:
-            # Удаляем приветственное сообщение
+            # Удаление приветственного сообщения
             await callback.message.bot.delete_message(
                 chat_id=callback.message.chat.id,
                 message_id=welcome_message_id
@@ -69,16 +66,11 @@ async def gender_choice(callback: CallbackQuery, state: FSMContext):
         except Exception as e:
             print(f"Ошибка удаления сообщения: {e}")
 
-    # Сохраняем пол в FSMContext
     await state.update_data(gender=callback.data)
-
-    # Переход в следующее состояние
     await state.set_state(InitialRegistration.profession)
-
     await callback.message.edit_text("Здорово! 😃 \n\nРасскажи, чем ты занимаешься?",
                                      reply_markup=inline_kb.kb_profession)
     await callback.answer()
-
 
 
 # Обработчик выбора профессии
@@ -87,13 +79,13 @@ async def gender_choice(callback: CallbackQuery, state: FSMContext):
                                          'employee', 'freelancer']))
 async def profession_choice(callback: CallbackQuery, state: FSMContext):
     async with session_maker() as session:
-        async with session.begin():  # Начинаем транзакцию
+        async with session.begin():
             user_data = await state.get_data()
             user_id = callback.from_user.id
             profession = callback.data
             gender = user_data.get("gender")
 
-            # Проверяем, существует ли пользователь
+            # Проверка наличия пользователя
             result = await session.execute(select(User).where(User.tg_id == user_id))
             user = result.scalars().first()
 
@@ -110,11 +102,9 @@ async def profession_choice(callback: CallbackQuery, state: FSMContext):
                 stmt = insert(User).values(tg_id=user_id, profession=profession, gender=gender)
                 await session.execute(stmt)
 
-            await session.commit()  # Фиксируем изменения
+            await session.commit()
 
-    # Завершаем регистрацию
     await state.clear()
-
     await callback.message.edit_text("Отлично! 👍 \nДля получения скидки 10% остался "
                                      "лишь один шаг.\nПерейди в меню и оформи карту "
                                      "лояльности 💳")
@@ -122,5 +112,3 @@ async def profession_choice(callback: CallbackQuery, state: FSMContext):
                                   "в правом нижнем углу рядом с микрофоном 👌",
                                   reply_markup=reply_kb.main)
     await callback.answer()
-
-
