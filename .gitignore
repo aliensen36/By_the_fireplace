@@ -141,3 +141,8 @@ cython_debug/
 *.bak
 *.swp
 *.tmp
+
+
+alembic.ini
+alembic/
+fireplace_db.db
