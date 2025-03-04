@@ -9,6 +9,7 @@ import app.keyboards.reply as reply_kb
 import app.keyboards.inline as inline_kb
 from database.engine import session_maker
 from database.models import User
+from app.text import *
 
 start_router = Router()
 
@@ -31,18 +32,8 @@ async def cmd_start(message: Message, state: FSMContext):
     if not message.from_user.username:
         photo_ios_path = 'docs/ios_guide.jpg'
         photo_android_path = 'docs/android_guide.jpg'
-        ios_instructions = (
-            "📱 **IOS**\n\n"
-            "1. Нажмите ⚙️Настройки в правом нижнем углу\n"
-            "2. Нажмите \"Выбрать имя пользователя\"\n"
-            "3. Введите имя пользователя\n"
-        )
-        android_instructions = (
-            "🤖 **Android**\n\n"
-            "1. Нажмите на 3 полоски в левом верхнем углу\n"
-            "2. Нажмите ⚙️Настройки\n"
-            "3. Нажмите на \"Имя пользователя\" и введите имя\n"
-        )
+        ios_instructions = ios_instructions_message
+        android_instructions = android_instructions_message
         await message.answer_photo(photo=types.FSInputFile(photo_ios_path),
                                  caption=ios_instructions)
         await message.answer_photo(photo=types.FSInputFile(photo_android_path),
@@ -51,13 +42,8 @@ async def cmd_start(message: Message, state: FSMContext):
                              "**Username** в настройках Telegram, "
                              "после чего нажмите /start", parse_mode="Markdown")
         return
-
-    welcome_message = await message.answer(
-        "Привет дорогой друг✋\n"
-        "Я виртуальный помощник ресторана \"У камина\"\n\n"
-        "Давай познакомимся поближе🤗")
-
-    await state.update_data(welcome_message_id=welcome_message.message_id)
+    welcome_msg = await message.answer(welcome_message)
+    await state.update_data(welcome_msg_id=welcome_msg.message_id)
     await state.set_state(Registration.gender)
     await message.answer("Кто Вы?", reply_markup=inline_kb.kb_gender)
 
@@ -66,14 +52,14 @@ async def cmd_start(message: Message, state: FSMContext):
 @start_router.callback_query(StateFilter(Registration.gender), F.data.in_(['male', 'female']))
 async def gender_choice(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    welcome_message_id = data.get("welcome_message_id")
+    welcome_msg_id = data.get("welcome_msg_id")
 
-    if welcome_message_id:
+    if welcome_msg_id:
         try:
             # Удаление приветственного сообщения
             await callback.message.bot.delete_message(
                 chat_id=callback.message.chat.id,
-                message_id=welcome_message_id
+                message_id=welcome_msg_id
             )
         except Exception as e:
             print(f"Ошибка удаления сообщения: {e}")

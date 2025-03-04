@@ -7,7 +7,7 @@ main = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text='🚚️  Доставка'), KeyboardButton(text='📍️  Путь к нам')],
     [KeyboardButton(text='🎁️  Программа лояльности')],
     [KeyboardButton(text='️📝  Оставить отзыв'), KeyboardButton(text='🛎️  Вызов официанта')],
-    [KeyboardButton(text='📝  Заполнить анкету')],
+    [KeyboardButton(text='📝 Заполнить анкету')],
 ],
     resize_keyboard=True,
     input_field_placeholder='Выберите действие')

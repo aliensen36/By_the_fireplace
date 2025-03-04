@@ -6,37 +6,24 @@ from aiogram.types import CallbackQuery
 
 from app.fsm_states import Registration
 from app.handlers.start_handler import start_router
+from aiogram.fsm.state import default_state
 import app.keyboards.inline as inline_kb
+from app.text import *
 
-router = Router()
+survey_router = Router()
 
 # Обработчик анкетирования '📝 Заполнить анкету'
-@start_router.callback_query(StateFilter(Registration.age_group), F.text == '📝  Заполнить анкету')
-async def survey(callback: CallbackQuery, state: FSMContext):
-    await callback.answer(
-        "Мы очень рады, что вы выбрали наш ресторан!\n"
-        "Нам важно, чтобы каждый гость чувствовал себя здесь по-настоящему особенным. "
-        "Помогите нам стать лучше — ответьте на несколько коротких вопросов.\n"
-        "Это займет не больше 10 минут, а ваше мнение станет ценным вкладом в улучшение нашего сервиса, меню и атмосферы.\n"
-        "Заранее спасибо за вашу искренность!\n\n"
-        "А в конце вас ждет приятный подарок 😉"
-    )
+@survey_router.message(F.text == '📝 Заполнить анкету')
+async def survey_start(message: Message, state: FSMContext):
+    await message.answer(survey_message)
+    await state.set_state(Registration.age_group)
+    await message.answer("1. Сколько вам лет?",
+                         reply_markup=inline_kb.kb_age)
 
-    data = await state.get_data()
-    welcome_message_id = data.get("welcome_message_id")
 
-    if welcome_message_id:
-        try:
-            # Удаление приветственного сообщения
-            await callback.message.bot.delete_message(
-                chat_id=callback.message.chat.id,
-                message_id=welcome_message_id
-            )
-        except Exception as e:
-            print(f"Ошибка удаления сообщения: {e}")
-
-    await state.update_data(gender=callback.data)
-    await state.set_state(Registration.profession)
-    await callback.message.edit_text("Здорово! 😃 \n\nРасскажи, чем ты занимаешься?",
-                                     reply_markup=inline_kb.kb_age)
-    await callback.answer()
+# @survey_router.callback_query(StateFilter(default_state), F.data.in_(['age_18_24',
+#                                                                'age_25_27',
+#                                                                'age_28_40',
+#                                                                'age_41_55',
+#                                                                'age_55_plus']))
+# async def survey(callback: CallbackQuery, ):

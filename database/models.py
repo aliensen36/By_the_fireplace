@@ -11,9 +11,9 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     tg_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False)
-    name: Mapped[str] = mapped_column(String, nullable=True)
-    gender: Mapped[str] = mapped_column(String, nullable=True)
-    profession: Mapped[str] = mapped_column(String, nullable=True)
-    age_group: Mapped[str] = mapped_column(String, nullable=True)
+    name: Mapped[str] = mapped_column(String(150), nullable=True)
+    gender: Mapped[str] = mapped_column(String(10), nullable=True)
+    profession: Mapped[str] = mapped_column(String(40), nullable=True)
+    age_group: Mapped[str] = mapped_column(String(40), nullable=True)
     place_of_residence: Mapped[str] = mapped_column(String, nullable=True)
     alone_or_company: Mapped[str] = mapped_column(String, nullable=True)

@@ -2,6 +2,7 @@ from aiogram.types import (FSInputFile, Message, InlineKeyboardMarkup, InlineKey
 from aiogram import F, Router, types, Bot
 import app.keyboards.reply as reply_kb
 import app.keyboards.inline as inline_kb
+from app.text import *
 
 router = Router()
 
@@ -65,30 +66,21 @@ async def delivery(message: Message):
 # Обработчик кнопки '🎁️ Программа лояльности'
 @router.message(F.text == '🎁️  Программа лояльности')
 async def loyalty_program(message: Message):
-    await message.answer("🥳 10% скидка в День Рождения (действует 1 раз "
-                         "в течении 7-ми дней, кроме Реберного зала).\n\n"
-                         "☕️ Кофе в подарок при оформлении карты лояльности.\n\n"
-                         "🥘 Любое горячее блюдо на выбор за 5-ть приглашенных "
-                         "друзей в чат-бот.\n\n⬇️ Выбери нужную кнопку ⬇️",
+    await message.answer(loyalty_program_message,
                          reply_markup=reply_kb.loyalty_program_keyboard)
 
 
 # Обработчик кнопки '👥 Пригласи друга'
 @router.message(F.text == '👥 Пригласи друга')
 async def invite_friend(message: Message, bot: Bot):
-    text_1 = ("✅ Используйте ссылку ниже, чтобы пригласить друзей в бот.\n\n"
-            "Бонус за приглашение друга активируется, когда ваш друг оформит "
-            "карту лояльности, находясь в нашем ресторане.\n\n)"
-            "Обращаем Ваше внимание, что бонус за приглашение друга не действует, "
-            "если ваш друг в момент приглашения уже находится в нашем ресторане.")
-    await message.answer(text_1)
+    await message.answer(invite_friend_message)
     url = "https://t.me/myzhenatybot?start=5930bf6439955aa9917a2c30bc9aff2c"
-    text_2 = f"Ссылка для приглашения.\n\nСсылку можно передать как в Telegram, " \
+    text = f"Ссылка для приглашения.\n\nСсылку можно передать как в Telegram, " \
              f"так и за его пределы.\n\n{url}"
     button = InlineKeyboardButton(text="Отправить ссылку в ЛС",
                                   switch_inline_query=f"\n\nПриглашаю тебя в бот ресторана "
                                                       f"«У камина»!\n\nПерейди по ссылке:\n\n{url}")
     keyboard = InlineKeyboardMarkup(inline_keyboard=[[button]])
-    await message.answer(text_2, reply_markup=keyboard)
+    await message.answer(text, reply_markup=keyboard)
 
 
