@@ -42,7 +42,7 @@ async def show_menu_kids(message: Message):
 # Обработчик кнопки '⬅️ Назад'
 @router.message(F.text == '⬅️ Назад')
 async def back_to_main_menu(message: Message):
-    await message.answer(text="Выберите нужное вам действие👇",
+    await message.answer(text="Выберите 👇",
                          reply_markup=reply_kb.main)
 
 
