@@ -8,3 +8,8 @@ class Registration(StatesGroup):
     company = State()
     reason = State()
     advertising_sources = State()
+    visit_frequency = State()
+    purpose = State()
+    food_preferences = State()
+    suggestions = State()
+    atmosphere = State()

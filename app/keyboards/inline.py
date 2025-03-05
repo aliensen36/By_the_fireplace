@@ -24,11 +24,11 @@ kb_profession = InlineKeyboardMarkup(
 # Клавиатура для выбора возрастной группы
 kb_age = InlineKeyboardMarkup(
     inline_keyboard=[
-        [InlineKeyboardButton(text='18 – 24', callback_data='age_18_24')],
-        [InlineKeyboardButton(text='25 – 27', callback_data='age_25_27')],
-        [InlineKeyboardButton(text='28 – 40', callback_data='age_28_40')],
-        [InlineKeyboardButton(text='41 – 55', callback_data='age_41_55')],
-        [InlineKeyboardButton(text='55+', callback_data='age_55_plus')],
+        [InlineKeyboardButton(text='🧑‍🎓👩‍🎓 18 – 24', callback_data='age_18_24')],
+        [InlineKeyboardButton(text='🧔👩‍🦰 25 – 27', callback_data='age_25_27')],
+        [InlineKeyboardButton(text='👨‍🦰👩‍🦳 28 – 40', callback_data='age_28_40')],
+        [InlineKeyboardButton(text='🧓👵 41 – 55', callback_data='age_41_55')],
+        [InlineKeyboardButton(text='🎩👒 55+', callback_data='age_55_plus')],
     ]
 )
 
@@ -82,8 +82,7 @@ kb_advertising_sources = InlineKeyboardMarkup(
 )
 
 
-
-
+# Клавиатура для выбора частоты посещения
 kb_visit_frequency = InlineKeyboardMarkup(
     inline_keyboard=[
         [InlineKeyboardButton(text='✨ Впервые', callback_data='first_time')],
@@ -91,5 +90,46 @@ kb_visit_frequency = InlineKeyboardMarkup(
         [InlineKeyboardButton(text='📅 1-3 раза в месяц', callback_data='monthly')],
         [InlineKeyboardButton(text='🗓 Раз в 2-3 месяца', callback_data='every_few_months')],
         [InlineKeyboardButton(text='⏳ Реже', callback_data='rarely')],
+    ]
+)
+
+
+# Клавиатура для выбора повода
+kb_purpose = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='🍳 Повседневный завтрак/обед/ужин',
+                          callback_data='everyday_meal')],
+    [InlineKeyboardButton(text='💑 Свидание', callback_data='date')],
+    [InlineKeyboardButton(text='💼 Деловая встреча', callback_data='business_meeting')],
+    [InlineKeyboardButton(text='🎉 Семейный праздник', callback_data='family_celebration')]
+])
+
+
+# Клавиатура для выбора предпочтений
+kb_food_preferences = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text='🥩 Мясные блюда', callback_data='meat_dishes')],
+        [InlineKeyboardButton(text='🐟 Рыба и морепродукты', callback_data='fish_seafood')],
+        [InlineKeyboardButton(text='🥦 Вегетарианские/веганские позиции', callback_data='vegan_options')],
+        [InlineKeyboardButton(text='🍰 Десерты', callback_data='desserts')],
+        [InlineKeyboardButton(text='🍹 Алкогольные коктейли', callback_data='alcohol_cocktails')],
+        [InlineKeyboardButton(text='☕ Кофе/чай', callback_data='coffee_tea')],
+    ]
+)
+
+# Клавиатура для пропуска
+kb_skip = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text='⏭️ Пропустить', callback_data='skip')]
+    ]
+)
+
+
+# Клавиатура для выбора атмосферы
+kb_atmosphere = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text='🛋️ Уютная и расслабляющая', callback_data='cozy_relaxing')],
+        [InlineKeyboardButton(text='✨ Современная и стильная', callback_data='modern_stylish')],
+        [InlineKeyboardButton(text='🎉 Шумная и оживленная', callback_data='loud_lively')],
+        [InlineKeyboardButton(text='🙂 Обычная', callback_data='ordinary')]
     ]
 )

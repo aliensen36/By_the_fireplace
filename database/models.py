@@ -19,3 +19,8 @@ class User(Base):
     company: Mapped[str] = mapped_column(String, nullable=True)
     reason: Mapped[str] = mapped_column(String, nullable=True)
     advertising_sources: Mapped[str] = mapped_column(String, nullable=True)
+    visit_frequency: Mapped[str] = mapped_column(String, nullable=True)
+    purpose: Mapped[str] = mapped_column(String, nullable=True)
+    food_preferences: Mapped[str] = mapped_column(String, nullable=True)
+    suggestions: Mapped[str] = mapped_column(String, nullable=True)
+    atmosphere: Mapped[str] = mapped_column(String, nullable=True)
