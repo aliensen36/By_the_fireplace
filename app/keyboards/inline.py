@@ -133,3 +133,37 @@ kb_atmosphere = InlineKeyboardMarkup(
         [InlineKeyboardButton(text='🙂 Обычная', callback_data='ordinary')]
     ]
 )
+
+
+# Клавиатура для оценки обслуживания
+kb_service_rating = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text='⏳ Скорость', callback_data='speed')],
+        [InlineKeyboardButton(text='😊 Вежливость персонала', callback_data='politeness')],
+        [InlineKeyboardButton(text='🔍 Внимание к деталям', callback_data='attention_to_details')],
+        [InlineKeyboardButton(text='👍 Все нравится', callback_data='everything_good')]
+    ]
+)
+
+
+# Клавиатура для улучшений
+kb_improvements = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text='📜 Обновление меню', callback_data='update_menu')],
+        [InlineKeyboardButton(text='🛋 Обновление интерьера', callback_data='update_interior')],
+        [InlineKeyboardButton(text='💰 Снижение цен', callback_data='lower_prices')],
+        [InlineKeyboardButton(text='🎵 Улучшение музыки', callback_data='better_music')]
+    ]
+)
+
+
+# Клавиатура для помех
+kb_obstacles = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text='💰 Высокие цены', callback_data='high_prices')],
+        [InlineKeyboardButton(text='📍 Неудобное расположение', callback_data='inconvenient_location')],
+        [InlineKeyboardButton(text='📜 Ограниченное меню', callback_data='limited_menu')],
+        [InlineKeyboardButton(text='👎 Низкое качество обслуживания', callback_data='poor_service')],
+        [InlineKeyboardButton(text='😊 Ничего не мешает', callback_data='no_obstacles')],
+    ]
+)

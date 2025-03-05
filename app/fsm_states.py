@@ -5,6 +5,8 @@ class Registration(StatesGroup):
     profession = State()
     age_group = State()
     residence = State()
+
+class Survey(StatesGroup):
     company = State()
     reason = State()
     advertising_sources = State()
@@ -13,3 +15,6 @@ class Registration(StatesGroup):
     food_preferences = State()
     suggestions = State()
     atmosphere = State()
+    service_rating = State()
+    improvements = State()
+    obstacles = State()

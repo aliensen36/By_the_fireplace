@@ -4,7 +4,7 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 
-from app.fsm_states import Registration
+from app.fsm_states import *
 from app.handlers.start_handler import start_router
 from aiogram.fsm.state import default_state
 import app.keyboards.inline as inline_kb
@@ -22,7 +22,7 @@ async def survey_start(message: Message, state: FSMContext):
     await state.set_state(Registration.age_group)
 
 
-# Обработчик выбора возраста
+# Обработчик выбора возраста (вопрос 1)
 @survey_router.callback_query(Registration.age_group,
                               F.data.in_(['age_18_24', 'age_25_27', 'age_28_40',
                                           'age_41_55', 'age_55_plus']))
@@ -34,7 +34,7 @@ async def survey_age_group(callback: CallbackQuery, state: FSMContext):
     await state.set_state(Registration.residence)
 
 
-# Обработчик выбора места жительства
+# Обработчик выбора места жительства (вопрос 2)
 @survey_router.callback_query(Registration.residence,
                               F.data.in_(['city', 'region', 'tourist']))
 async def survey_residence(callback: CallbackQuery, state: FSMContext):
@@ -42,11 +42,11 @@ async def survey_residence(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     await callback.message.edit_text("3. С кем вы чаще всего посещаете рестораны?",
                                      reply_markup=inline_kb.kb_company)
-    await state.set_state(Registration.company)
+    await state.set_state(Survey.company)
 
 
-# Обработчик выбора компании
-@survey_router.callback_query(Registration.company,
+# Обработчик выбора компании (вопрос 3)
+@survey_router.callback_query(Survey.company,
                               F.data.in_(['alone', 'couple', 'married',
                                           'family', 'friends', 'colleagues']))
 async def survey_company(callback: CallbackQuery, state: FSMContext):
@@ -56,11 +56,11 @@ async def survey_company(callback: CallbackQuery, state: FSMContext):
                                      "P.S. Выберите 1 вариант из предложенных или "
                                      "напишите несколько вариантов текстом!",
                                      reply_markup=inline_kb.kb_reason)
-    await state.set_state(Registration.reason)
+    await state.set_state(Survey.reason)
 
 
-# Обработчик выбора причины
-@survey_router.callback_query(Registration.reason,
+# Обработчик выбора причины (вопрос 4)
+@survey_router.callback_query(Survey.reason,
                               F.data.in_(['quality', 'atmosphere', 'prices',
                                           'location', 'instagrammable',
                                           'service_speed', 'friends_recommend',
@@ -70,21 +70,21 @@ async def survey_reason(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     await callback.message.edit_text("5. Как вы узнали о нашем ресторане?",
                                      reply_markup=inline_kb.kb_advertising_sources)
-    await state.set_state(Registration.advertising_sources)
+    await state.set_state(Survey.advertising_sources)
 
 
 # Обработчик текстового ответа на вопрос 4
-@survey_router.message(Registration.reason)
+@survey_router.message(Survey.reason)
 async def survey_reason_text(message: Message, state: FSMContext):
     await state.update_data(reason=message.text)
     await message.answer("Спасибо! Ваш ответ записан. ✅")
     await message.answer("5. Как вы узнали о нашем ресторане?",
                          reply_markup=inline_kb.kb_advertising_sources)
-    await state.set_state(Registration.advertising_sources)
+    await state.set_state(Survey.advertising_sources)
 
 
-# Обработчик выбора источника
-@survey_router.callback_query(Registration.advertising_sources,
+# Обработчик выбора источника (вопрос 5)
+@survey_router.callback_query(Survey.advertising_sources,
                               F.data.in_(['instagram', 'vk', 'friends_recommend',
                                           'search', 'walk_by']))
 async def survey_advertising_sources(callback: CallbackQuery, state: FSMContext):
@@ -92,11 +92,11 @@ async def survey_advertising_sources(callback: CallbackQuery, state: FSMContext)
     await callback.answer()
     await callback.message.edit_text("6. Как часто вы посещаете наш ресторан?",
                                      reply_markup=inline_kb.kb_visit_frequency)
-    await state.set_state(Registration.visit_frequency)
+    await state.set_state(Survey.visit_frequency)
 
 
-# Обработчик выбора частоты посещения
-@survey_router.callback_query(Registration.visit_frequency,
+# Обработчик выбора частоты посещения (вопрос 6)
+@survey_router.callback_query(Survey.visit_frequency,
                               F.data.in_(['first_time', 'more_than_weekly',
                                           'monthly', 'every_few_months', 'rarely']))
 async def survey_visit_frequency(callback: CallbackQuery, state: FSMContext):
@@ -104,11 +104,11 @@ async def survey_visit_frequency(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     await callback.message.edit_text("7. По какому поводу вы обычно ходите в ресторан",
                                      reply_markup=inline_kb.kb_purpose)
-    await state.set_state(Registration.purpose)
+    await state.set_state(Survey.purpose)
 
 
-# Обработчик выбора повода
-@survey_router.callback_query(Registration.purpose,
+# Обработчик выбора повода (вопрос 7)
+@survey_router.callback_query(Survey.purpose,
                               F.data.in_(['everyday_meal', 'date', 'business_meeting',
                                           'family_celebration']))
 async def survey_purpose(callback: CallbackQuery, state: FSMContext):
@@ -119,11 +119,11 @@ async def survey_purpose(callback: CallbackQuery, state: FSMContext):
                                      "из предложенных или напишите несколько "
                                      "вариантов текстом.",
                                      reply_markup=inline_kb.kb_food_preferences)
-    await state.set_state(Registration.food_preferences)
+    await state.set_state(Survey.food_preferences)
 
 
-# Обработчик выбора предпочтений
-@survey_router.callback_query(Registration.food_preferences,
+# Обработчик выбора предпочтений (вопрос 8)
+@survey_router.callback_query(Survey.food_preferences,
                               F.data.in_(['meat_dishes', 'fish_seafood', 'vegan_options',
                                           'desserts', 'alcohol_cocktails', 'coffee_tea']))
 async def survey_food_preferences(callback: CallbackQuery, state: FSMContext):
@@ -132,30 +132,125 @@ async def survey_food_preferences(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_text("9. Какие блюда вы бы хотели видеть в нашем меню?\n\n"
                                      "Напишите текстом или пропустите этот вопрос.",
                                      reply_markup=inline_kb.kb_skip)
-    await state.set_state(Registration.suggestions)
+    await state.set_state(Survey.suggestions)
 
 
-# Обработчик для предложений блюд
-@survey_router.callback_query(Registration.suggestions)
+# Обработчик текстового ответа на вопрос 8
+@survey_router.message(Survey.food_preferences)
+async def survey_food_preferences_text(message: Message, state: FSMContext):
+    await state.update_data(food_preferences=message.text)
+    await message.answer("Спасибо! Ваш ответ записан. ✅")
+    await message.answer("9. Какие блюда вы бы хотели видеть в нашем меню?\n\n"
+                         "Напишите текстом или пропустите этот вопрос.",
+                         reply_markup=inline_kb.kb_skip)
+    await state.set_state(Survey.suggestions)
+
+
+# Обработчик для предложений блюд (вопрос 9)
+@survey_router.callback_query(Survey.suggestions)
 async def survey_suggestions(callback: CallbackQuery, state: FSMContext):
     await state.update_data(suggestions=callback.data)
     await callback.answer()
     await callback.message.edit_text("10. Как бы вы описали атмосферу "
                                      "в нашем ресторане?",
                                      reply_markup=inline_kb.kb_atmosphere)
-    await state.set_state(Registration.atmosphere)
+    await state.set_state(Survey.atmosphere)
 
 
 # Обработчик текстового ответа на вопрос 9
-@survey_router.message(Registration.suggestions)
+@survey_router.message(Survey.suggestions)
 async def survey_suggestions_text(message: Message, state: FSMContext):
     await state.update_data(suggestions=message.text)
     await message.answer("Спасибо! Ваш ответ записан. ✅")
     await message.answer("10. Как бы вы описали атмосферу"
                          "в нашем ресторане?",
                          reply_markup=inline_kb.kb_atmosphere)
-    await state.set_state(Registration.atmosphere)
+    await state.set_state(Survey.atmosphere)
 
+
+# Обработчик выбора атмосферы (вопрос 10)
+@survey_router.callback_query(Survey.atmosphere,
+                              F.data.in_(['cozy_relaxing', 'modern_stylish',
+                                          'loud_lively', 'ordinary']))
+async def survey_atmosphere(callback: CallbackQuery, state: FSMContext):
+    await state.update_data(atmosphere=callback.data)
+    await callback.answer()
+    await callback.message.edit_text("11. Что вам нравится в обслуживании?",
+                                     reply_markup=inline_kb.kb_service_rating)
+    await state.set_state(Survey.service_rating)
+
+
+# Обработчик оценки обслуживания (вопрос 11)
+@survey_router.callback_query(Survey.service_rating,
+                              F.data.in_(['speed', 'politeness', 'attention_to_details',
+                                          'everything_good']))
+async def survey_service_rating(callback: CallbackQuery, state: FSMContext):
+    await state.update_data(service_rating=callback.data)
+    await callback.answer()
+    await callback.message.edit_text("12. Что бы вы улучшили в нашем ресторане?\n\n"
+                                     "P.S. Выберите 1 вариант из предложенных или "
+                                     "напишите несколько вариантов текстом!",
+                                     reply_markup=inline_kb.kb_improvements)
+    await state.set_state(Survey.improvements)
+
+
+# Обработчик текстового ответа на вопрос 11
+@survey_router.message(Survey.service_rating)
+async def survey_service_rating_text(message: Message, state: FSMContext):
+    await state.update_data(service_rating=message.text)
+    await message.answer("Спасибо! Ваш ответ записан. ✅")
+    await message.answer("12. Что бы вы улучшили в нашем ресторане?\n\n"
+                         "P.S. Выберите 1 вариант из предложенных или "
+                         "напишите несколько вариантов текстом!",
+                         reply_markup=inline_kb.kb_improvements)
+    await state.set_state(Survey.improvements)
+
+
+# Обработчик для улучшений (вопрос 12)
+@survey_router.callback_query(Survey.improvements,
+                              F.data.in_(['update_menu', 'update_interior',
+                                          'lower_prices', 'better_music']))
+async def survey_improvements(callback: CallbackQuery, state: FSMContext):
+    await state.update_data(improvements=callback.data)
+    await callback.answer()
+    await callback.message.edit_text("13. Что мешает вам посещать нас чаще?",
+                                     reply_markup=inline_kb.kb_obstacles)
+    await state.set_state(Survey.obstacles)
+
+
+# Обработчик текстового ответа на вопрос 12
+@survey_router.message(Survey.improvements)
+async def survey_improvements_text(message: Message, state: FSMContext):
+    await state.update_data(improvements=message.text)
+    await message.answer("Спасибо! Ваш ответ записан. ✅")
+    await message.answer("13. Что мешает вам посещать нас чаще?",
+                         reply_markup=inline_kb.kb_obstacles)
+    await state.set_state(Survey.obstacles)
+
+
+
+
+
+# Обработчик выбора
+# @survey_router.callback_query(Survey.,
+#                               F.data.in_([]))
+# async def survey_(callback: CallbackQuery, state: FSMContext):
+#     await state.update_data(=callback.data)
+#     await callback.answer()
+#     await callback.message.edit_text("",
+#                                      reply_markup=inline_kb.)
+#     await state.set_state(Survey.)
+
+
+
+# Обработчик текстового ответа на вопрос
+# @survey_router.message(Survey.)
+# async def survey_ _text(message: Message, state: FSMContext):
+#     await state.update_data(=message.text)
+#     await message.answer("Спасибо! Ваш ответ записан. ✅")
+#     await message.answer("",
+#                          reply_markup=inline_kb.)
+#     await state.set_state(Survey.)
 
 
 # Обработчик кнопки 'Отмена'

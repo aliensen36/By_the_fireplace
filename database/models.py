@@ -1,5 +1,5 @@
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import BigInteger, String, DateTime, func, Integer
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy import BigInteger, String, DateTime, func, ForeignKey
 
 
 class Base(DeclarativeBase):
@@ -16,6 +16,15 @@ class User(Base):
     profession: Mapped[str] = mapped_column(String(40), nullable=True)
     age_group: Mapped[str] = mapped_column(String(40), nullable=True)
     residence: Mapped[str] = mapped_column(String, nullable=True)
+
+    surveys: Mapped[list['Survey']] = relationship(back_populates='user', cascade='all, delete-orphan')
+
+
+class Survey(Base):
+    __tablename__ = "surveys"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
     company: Mapped[str] = mapped_column(String, nullable=True)
     reason: Mapped[str] = mapped_column(String, nullable=True)
     advertising_sources: Mapped[str] = mapped_column(String, nullable=True)
@@ -24,3 +33,8 @@ class User(Base):
     food_preferences: Mapped[str] = mapped_column(String, nullable=True)
     suggestions: Mapped[str] = mapped_column(String, nullable=True)
     atmosphere: Mapped[str] = mapped_column(String, nullable=True)
+    service_rating: Mapped[str] = mapped_column(String, nullable=True)
+    improvements: Mapped[str] = mapped_column(String, nullable=True)
+    obstacles: Mapped[str] = mapped_column(String, nullable=True)
+
+    user: Mapped['User'] = relationship(back_populates='surveys')
