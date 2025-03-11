@@ -12,15 +12,28 @@ router = Router()
 async def restaurant_description(message: Message):
     link = "https://telegra.ph/MYZHENATY-03-11-2"
     await message.answer(link, parse_mode='Markdown',
-                         reply_markup=reply_kb.main)
+                         reply_markup=reply_kb.get_keyboard(
+                             '🍽️ У камина', '📋️ Меню', '📅🍽️ Забронировать стол',
+                             '🚚️ Доставка', '📍 Путь к нам', '🎁 Программа лояльности',
+                             '📝️ Оставить отзыв', '🛎️  Вызов официанта', '📝 Заполнить анкету',
+                             placeholder="Что вас интересует?",
+                             sizes=(2, 1, 2, 1, 2, 1),
+                         )
+    )
 
 
 # Обработчик кнопки '📋️ Меню'
-@router.message(F.text == '📋️  Меню')
+@router.message(F.text == '📋️ Меню')
 async def show_menu_options(message: Message):
     await message.answer("Выберите нужное вам меню👇",
-                         reply_markup=reply_kb.menu_options_keyboard)
-
+                         reply_markup=reply_kb.get_keyboard(
+                             '🍽️Основное меню',
+                             '👶 Детское меню',
+                             '⬅️ Назад',
+                             placeholder="Что вас интересует?",
+                             sizes=(1,1,1),
+                         )
+    )
 
 # Обработчик кнопки '🍽️ Основное меню'
 @router.message(F.text == '🍽️ Основное меню')
@@ -36,14 +49,28 @@ async def send_main_menu_pdf(message: Message):
 async def show_menu_kids(message: Message):
     link = "https://disk.yandex.ru/i/Qat0Y1HO88Arvw"
     await message.answer(link, parse_mode='Markdown',
-                         reply_markup=reply_kb.menu_options_keyboard)
+                         reply_markup=reply_kb.get_keyboard(
+                             '🍽️Основное меню',
+                             '👶 Детское меню',
+                             '⬅️ Назад',
+                             placeholder="Что вас интересует?",
+                             sizes=(1,1,1),
+                         )
+    )
 
 
 # Обработчик кнопки '⬅️ Назад'
 @router.message(F.text == '⬅️ Назад')
 async def back_to_main_menu(message: Message):
     await message.answer(text="Выберите 👇",
-                         reply_markup=reply_kb.main)
+                         reply_markup=reply_kb.get_keyboard(
+                             '🍽️ У камина', '📋️ Меню', '📅🍽️ Забронировать стол',
+                             '🚚️ Доставка', '📍 Путь к нам', '🎁 Программа лояльности',
+                             '📝️ Оставить отзыв', '🛎️  Вызов официанта', '📝 Заполнить анкету',
+                             placeholder="Что вас интересует?",
+                             sizes=(2,1,2,1,2,1),
+                         )
+    )
 
 
 # Обработчик кнопки '📍 Путь к нам'

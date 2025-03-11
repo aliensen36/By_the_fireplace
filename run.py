@@ -6,7 +6,6 @@ import asyncio
 from aiogram import Bot, Dispatcher, types
 
 from dotenv import load_dotenv
-
 load_dotenv()
 
 import logging
@@ -18,6 +17,8 @@ from middlewares.db import DataBaseSession
 from app.handlers.handlers import router
 from app.handlers.start_handler import start_router
 from app.handlers.survey_handler import survey_router
+from app.handlers.admin import admin_router
+from app.handlers.user_group import user_group_router
 
 logging.basicConfig(level=logging.INFO)
 
@@ -31,6 +32,8 @@ dp = Dispatcher(storage=MemoryStorage())
 dp.include_router(start_router)
 dp.include_router(router)
 dp.include_router(survey_router)
+dp.include_router(admin_router)
+dp.include_router(user_group_router)
 
 async def on_startup(bot):
     run_param = False

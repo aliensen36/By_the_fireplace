@@ -22,7 +22,13 @@ async def cmd_start(message: Message, state: FSMContext):
     else:
         await message.answer(
             "Добро пожаловать! 🎉\nС возвращением!",
-            reply_markup=reply_kb.main
+            reply_markup=reply_kb.get_keyboard(
+                '🍽️ У камина', '📋️ Меню', '📅🍽️ Забронировать стол',
+                '🚚️ Доставка', '📍 Путь к нам', '🎁 Программа лояльности',
+                '📝️ Оставить отзыв', '🛎️  Вызов официанта', '📝 Заполнить анкету',
+                placeholder="Что вас интересует?",
+                sizes=(2,1,2,1,2,1)
+            )
         )
 
     # Обработка отсутствия username
@@ -71,5 +77,12 @@ async def profession_choice(callback: CallbackQuery, state: FSMContext):
                                      "лояльности 💳")
     await callback.message.answer("Если кнопки скрыты, то нажми на иконку 🎛 "
                                   "в правом нижнем углу рядом с микрофоном 👌",
-                                  reply_markup=reply_kb.main)
+                                  reply_markup=reply_kb.get_keyboard(
+                                      '🍽️ У камина', '📋️ Меню', '📅🍽️ Забронировать стол',
+                                      '🚚️ Доставка', '📍 Путь к нам', '🎁 Программа лояльности',
+                                      '📝️ Оставить отзыв', '🛎️  Вызов официанта', '📝 Заполнить анкету',
+                                      placeholder="Что вас интересует?",
+                                      sizes=(2,1,2,1,2,1)
+                                  )
+    )
     await callback.answer()
