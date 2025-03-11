@@ -1,32 +1,29 @@
 from aiogram.filters import CommandStart, StateFilter
-from aiogram.types import (CallbackQuery, Message)
+from aiogram.types import CallbackQuery, Message
 from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
-from sqlalchemy import update, insert, select
 from app.fsm_states import Registration
 import app.keyboards.reply as reply_kb
 import app.keyboards.inline as inline_kb
-from database.engine import session_maker
-from database.models import User
 from app.text import *
+from database.orm_query import *
 
 start_router = Router()
 
 
 @start_router.message(CommandStart(), StateFilter(default_state))
 async def cmd_start(message: Message, state: FSMContext):
-    user_id = message.from_user.id
+    tg_id = message.from_user.id
+    is_new_user = await set_user(tg_id)
 
-    async with session_maker() as session:
-        result = await session.execute(select(User).where(User.tg_id == user_id))
-        user = result.scalars().first()
-
-    if user:
-        # Если пользователь уже зарегистрирован → показ главного меню
-        await message.answer("Добро пожаловать! 🎉\nС возвращением!",
-                             reply_markup=reply_kb.main)
-        return
+    if is_new_user:
+        await message.answer(welcome_message)
+    else:
+        await message.answer(
+            "Добро пожаловать! 🎉\nС возвращением!",
+            reply_markup=reply_kb.main
+        )
 
     # Обработка отсутствия username
     if not message.from_user.username:
@@ -42,28 +39,13 @@ async def cmd_start(message: Message, state: FSMContext):
                              "**Username** в настройках Telegram, "
                              "после чего нажмите /start", parse_mode="Markdown")
         return
-    welcome_msg = await message.answer(welcome_message)
-    await state.update_data(welcome_msg_id=welcome_msg.message_id)
+
     await state.set_state(Registration.gender)
     await message.answer("Кто Вы?", reply_markup=inline_kb.kb_gender)
 
 
-# Обработчик выбора пола
 @start_router.callback_query(StateFilter(Registration.gender), F.data.in_(['male', 'female']))
 async def gender_choice(callback: CallbackQuery, state: FSMContext):
-    data = await state.get_data()
-    welcome_msg_id = data.get("welcome_msg_id")
-
-    if welcome_msg_id:
-        try:
-            # Удаление приветственного сообщения
-            await callback.message.bot.delete_message(
-                chat_id=callback.message.chat.id,
-                message_id=welcome_msg_id
-            )
-        except Exception as e:
-            print(f"Ошибка удаления сообщения: {e}")
-
     await state.update_data(gender=callback.data)
     await state.set_state(Registration.profession)
     await callback.message.edit_text("Здорово! 😃 \n\nРасскажи, чем ты занимаешься?",
@@ -71,36 +53,17 @@ async def gender_choice(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
-# Обработчик выбора профессии
 @start_router.callback_query(StateFilter(Registration.profession),
-                             F.data.in_(['student', 'businessman',
-                                         'employee', 'freelancer']))
+                             F.data.in_(['student', 'businessman', 'employee', 'freelancer']))
 async def profession_choice(callback: CallbackQuery, state: FSMContext):
-    async with session_maker() as session:
-        async with session.begin():
-            user_data = await state.get_data()
-            user_id = callback.from_user.id
-            profession = callback.data
-            gender = user_data.get("gender")
+    user_data = await state.get_data()
+    user_id = callback.from_user.id
+    profession = callback.data
+    gender = user_data.get("gender")
 
-            # Проверка наличия пользователя
-            result = await session.execute(select(User).where(User.tg_id == user_id))
-            user = result.scalars().first()
-
-            if user:
-                # Если пользователь уже есть, обновляем
-                stmt = (
-                    update(User)
-                    .where(User.tg_id == user_id)
-                    .values(profession=profession, gender=gender)
-                )
-                await session.execute(stmt)
-            else:
-                # Если пользователя нет, создаём новую запись
-                stmt = insert(User).values(tg_id=user_id, profession=profession, gender=gender)
-                await session.execute(stmt)
-
-            await session.commit()
+    # Обновляем данные пользователя
+    await update_user_gender(user_id, gender)
+    await update_user_profession(user_id, profession)
 
     await state.clear()
     await callback.message.edit_text("Отлично! 👍 \nДля получения скидки 10% остался "

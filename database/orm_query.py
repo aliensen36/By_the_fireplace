@@ -1,24 +1,19 @@
-from sqlalchemy import select, update
+from sqlalchemy import select, update, insert
 from sqlalchemy.exc import SQLAlchemyError
 from database.models import User
 from database.engine import session_maker
 
 
-async def set_user(tg_id: int) -> None:
-    """Создание пользователя в БД, если его нет."""
+async def set_user(tg_id: int) -> bool:
+    """Создание пользователя в БД, если его нет. Возвращает True, если пользователь новый."""
     async with session_maker() as session:
-        try:
-            user = await session.scalar(select(User).where(User.tg_id == tg_id))
+        user = await session.scalar(select(User).where(User.tg_id == tg_id))
 
-            if not user:
-                new_user = User(tg_id=tg_id)
-                session.add(new_user)
-                await session.flush()  # Гарантирует добавление в БД
-                await session.commit()
-
-        except SQLAlchemyError as e:
-            await session.rollback()  # Откат изменений при ошибке
-            print(f"Ошибка при добавлении пользователя: {e}")
+        if not user:
+            session.add(User(tg_id=tg_id))
+            await session.commit()
+            return True  # Новый пользователь
+    return False  # Пользователь уже существовал
 
 
 async def update_user_gender(tg_id: int, gender: str) -> None:
@@ -28,7 +23,6 @@ async def update_user_gender(tg_id: int, gender: str) -> None:
             stmt = update(User).where(User.tg_id == tg_id).values(gender=gender)
             await session.execute(stmt)
             await session.commit()
-
         except SQLAlchemyError as e:
             await session.rollback()
             print(f"Ошибка при обновлении пола: {e}")
@@ -41,7 +35,6 @@ async def update_user_profession(tg_id: int, profession: str) -> None:
             stmt = update(User).where(User.tg_id == tg_id).values(profession=profession)
             await session.execute(stmt)
             await session.commit()
-
         except SQLAlchemyError as e:
             await session.rollback()
             print(f"Ошибка при обновлении профессии: {e}")
