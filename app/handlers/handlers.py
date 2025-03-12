@@ -8,14 +8,15 @@ router = Router()
 
 
 # Обработчик кнопки '🍽️ У камина'
-@router.message(F.text == '🍽️  У камина')
+@router.message(F.text == '🍽️ У камина')
 async def restaurant_description(message: Message):
     link = "https://telegra.ph/MYZHENATY-03-11-2"
     await message.answer(link, parse_mode='Markdown',
                          reply_markup=reply_kb.get_keyboard(
                              '🍽️ У камина', '📋️ Меню', '📅🍽️ Забронировать стол',
                              '🚚️ Доставка', '📍 Путь к нам', '🎁 Программа лояльности',
-                             '📝️ Оставить отзыв', '🛎️  Вызов официанта', '📝 Заполнить анкету',
+                             '📝️ Оставить отзыв', '🛎️  Вызов официанта',
+                             '📝 Заполнить анкету',
                              placeholder="Что вас интересует?",
                              sizes=(2, 1, 2, 1, 2, 1),
                          )
@@ -27,7 +28,7 @@ async def restaurant_description(message: Message):
 async def show_menu_options(message: Message):
     await message.answer("Выберите нужное вам меню👇",
                          reply_markup=reply_kb.get_keyboard(
-                             '🍽️Основное меню',
+                             '🍽️ Основное меню',
                              '👶 Детское меню',
                              '⬅️ Назад',
                              placeholder="Что вас интересует?",
@@ -74,7 +75,7 @@ async def back_to_main_menu(message: Message):
 
 
 # Обработчик кнопки '📍 Путь к нам'
-@router.message(F.text == '📍️  Путь к нам')
+@router.message(F.text == '📍 Путь к нам')
 async def location(message: Message):
     address = "г. Москва, ул. Лесная, д. 10"
     await message.answer(f"📍 Наш адрес: {address}")
@@ -84,17 +85,23 @@ async def location(message: Message):
 
 
 # Обработчик кнопки '🚚️ Доставка'
-@router.message(F.text == '🚚️  Доставка')
+@router.message(F.text == '🚚️ Доставка')
 async def delivery(message: Message):
     text = "🍽️ Закажите любое блюдо домой или в офис 🍴\n\nhttps://restoranmyzhenaty.ru/"
     await message.answer(text)
 
 
 # Обработчик кнопки '🎁️ Программа лояльности'
-@router.message(F.text == '🎁️  Программа лояльности')
+@router.message(F.text == '🎁 Программа лояльности')
 async def loyalty_program(message: Message):
     await message.answer(loyalty_program_message,
-                         reply_markup=reply_kb.loyalty_program_keyboard)
+                         reply_markup=reply_kb.get_keyboard(
+                             '💳 Карта лояльности',
+                             '👥 Пригласи друга',
+                             '⬅️ Назад',
+                             placeholder="Выберите",
+                             sizes=(1,1,1))
+                         )
 
 
 # Обработчик кнопки '👥 Пригласи друга'

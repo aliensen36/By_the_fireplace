@@ -26,9 +26,6 @@ def get_keyboard(
         resize_keyboard=True, input_field_placeholder=placeholder)
 
 
-# '💳 Карта лояльности',
-# '👥 Пригласи друга',
-# '⬅️ Назад',
 
 
 # Кнопка "Отмена"
