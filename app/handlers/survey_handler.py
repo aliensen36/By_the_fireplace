@@ -3,6 +3,7 @@ from aiogram.types import (CallbackQuery, Message)
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.fsm_states import *
 from app.handlers.start_handler import start_router
@@ -10,6 +11,7 @@ from aiogram.fsm.state import default_state
 import app.keyboards.inline as inline_kb
 import app.keyboards.reply as reply_kb
 from app.text import *
+from database.orm_query import orm_survey
 
 survey_router = Router()
 
@@ -213,6 +215,7 @@ async def survey_service_rating_text(message: Message, state: FSMContext):
 async def survey_improvements(callback: CallbackQuery, state: FSMContext):
     await state.update_data(improvements=callback.data)
     await callback.answer()
+    await state.set_state(Survey.obstacles)
     await callback.message.edit_text("13. Что мешает вам посещать нас чаще?",
                                      reply_markup=inline_kb.kb_obstacles)
     await state.set_state(Survey.obstacles)
@@ -228,6 +231,81 @@ async def survey_improvements_text(message: Message, state: FSMContext):
     await state.set_state(Survey.obstacles)
 
 
+# Обработчик для помех (вопрос 13)
+@survey_router.callback_query(Survey.obstacles,
+                              F.data.in_(['high_prices', 'inconvenient_location',
+                                          'limited_menu', 'poor_service', 'no_obstacles']))
+async def survey_obstacles(callback: CallbackQuery, state: FSMContext):
+    await state.update_data(obstacles=callback.data)
+    await callback.answer()
+    await state.set_state(Survey.restaurants)
+    await callback.message.edit_text("14. Какие рестораны вы чаще всего "
+                                     "посещаете (помимо нашего)?",
+                                     reply_markup=inline_kb.kb_restaurants)
+    await state.set_state(Survey.restaurants)
+
+
+# Обработчик для типов ресторанов (вопрос 14)
+@survey_router.callback_query(Survey.restaurants,
+                              F.data.in_(['chain_restaurants', 'fine_dining', 'cafes', 'bars']))
+async def survey_restaurants(callback: CallbackQuery, state: FSMContext):
+    await state.update_data(restaurants=callback.data)
+    await callback.answer()
+    await state.set_state(Survey.news)
+    await callback.message.edit_text("15. Как вы предпочитаете получать новости ресторана?",
+                                     reply_markup=inline_kb.kb_news)
+    await state.set_state(Survey.news)
+
+
+# Обработчик способа получения новостей (вопрос 15)
+@survey_router.callback_query(Survey.news,
+                              F.data.in_(['news_social', 'news_telegram', 'news_site_app']))
+async def survey_news(callback: CallbackQuery, state: FSMContext):
+    await state.update_data(news=callback.data)
+    await callback.answer()
+    await callback.message.edit_text("16. Что бы вы пожелали нашему ресторану? "
+                                     "Напишите текстом.",
+                                     reply_markup=inline_kb.kb_skip)
+    await state.set_state(Survey.wishes)
+
+
+# Обработчик текстового ответа на вопрос 15
+@survey_router.message(Survey.news)
+async def survey_news_text(message: Message, state: FSMContext):
+    await state.update_data(news=message.text)
+    await message.answer("Спасибо! Ваш ответ записан. ✅")
+    await message.answer("16. Что бы вы пожелали нашему ресторану? "
+                         "Напишите текстом.",
+                         reply_markup=inline_kb.kb_skip)
+    await state.set_state(Survey.wishes)
+
+
+# Обработчик шкалы рекомендаций (вопрос 16)
+@survey_router.callback_query(Survey.wishes)
+async def survey_wishes(callback: CallbackQuery, state: FSMContext):
+    await state.update_data(wishes=callback.data)
+    await callback.answer()
+    await callback.message.edit_text("17. Насколько вы готовы рекомендовать "
+                                     "нас друзьям по шкале от 1 (не готов) до 10 "
+                                     "(обязательно порекомендую)?",
+                                     reply_markup=inline_kb.kb_recommendation)
+    await state.set_state(Survey.recommendation)
+
+
+
+
+
+# Запись в БД. Добавить обработку ошибок
+# @survey_router.callback_query(Survey.improvements,
+#                               F.data.in_(['update_menu', 'update_interior',
+#                                           'lower_prices', 'better_music']))
+# async def survey_improvements(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
+#     await state.update_data(improvements=callback.data)
+#     await callback.answer()
+#     # await state.set_state(Survey.obstacles)
+#     data = await state.get_data()
+#     await orm_survey(session, user_id=callback.from_user.id, data=data)
+#     await state.clear()
 
 
 

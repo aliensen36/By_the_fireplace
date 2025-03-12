@@ -15,7 +15,7 @@ start_router = Router()
 @start_router.message(CommandStart(), StateFilter(default_state))
 async def cmd_start(message: Message, state: FSMContext):
     tg_id = message.from_user.id
-    is_new_user = await set_user(tg_id)
+    is_new_user = await orm_set_user(tg_id)
 
     if is_new_user:
         await message.answer(welcome_message)
@@ -27,7 +27,7 @@ async def cmd_start(message: Message, state: FSMContext):
                 '🚚️ Доставка', '📍 Путь к нам', '🎁 Программа лояльности',
                 '📝️ Оставить отзыв', '🛎️  Вызов официанта', '📝 Заполнить анкету',
                 placeholder="Что вас интересует?",
-                sizes=(2,1,2,1,2,1)
+                sizes=(2,1,2,1,2,1),
             )
         )
 
@@ -68,7 +68,7 @@ async def profession_choice(callback: CallbackQuery, state: FSMContext):
     gender = user_data.get("gender")
 
     # Обновляем данные пользователя
-    await update_user_gender(user_id, gender)
+    await orm_update_user_gender(user_id, gender)
     await update_user_profession(user_id, profession)
 
     await state.clear()

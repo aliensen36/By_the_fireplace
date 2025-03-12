@@ -18,3 +18,7 @@ class Survey(StatesGroup):
     service_rating = State()
     improvements = State()
     obstacles = State()
+    restaurants = State()
+    news = State()
+    wishes = State()
+    recommendation = State()

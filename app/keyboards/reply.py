@@ -1,4 +1,4 @@
-from aiogram.types import KeyboardButton
+from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 
@@ -39,4 +39,10 @@ def get_keyboard(
 
 
 
-'Отмена',
+
+# Кнопка "Отмена"
+cancel_keyboard = ReplyKeyboardMarkup(keyboard=[
+    [KeyboardButton(text='Отмена')],
+],
+    resize_keyboard=True)
+

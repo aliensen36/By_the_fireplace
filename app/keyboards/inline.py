@@ -157,7 +157,7 @@ kb_improvements = InlineKeyboardMarkup(
 )
 
 
-# Клавиатура для помех
+# Клавиатура для помех посещения
 kb_obstacles = InlineKeyboardMarkup(
     inline_keyboard=[
         [InlineKeyboardButton(text='💰 Высокие цены', callback_data='high_prices')],
@@ -167,3 +167,39 @@ kb_obstacles = InlineKeyboardMarkup(
         [InlineKeyboardButton(text='😊 Ничего не мешает', callback_data='no_obstacles')],
     ]
 )
+
+
+# Клавиатура для типов других ресторанов
+kb_restaurants = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='🏬 Сетевые рестораны', callback_data='chain_restaurants')],
+    [InlineKeyboardButton(text='🍽️ Рестораны с высокой кухней', callback_data='fine_dining')],
+    [InlineKeyboardButton(text='☕ Кафе и кофейни', callback_data='cafes')],
+    [InlineKeyboardButton(text='🍸 Бары', callback_data='bars')],
+])
+
+
+# Клавиатура для выбора способа получения новостей
+kb_news = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='📱 Соц. сети, Instagram, Reels', callback_data='news_social')],
+    [InlineKeyboardButton(text='🤖 Telegram-бот', callback_data='news_telegram')],
+    [InlineKeyboardButton(text='🌐 Сайт и мобильное приложение', callback_data='news_site_app')],
+])
+
+
+# Клавиатура для шкалы рекомендаций
+kb_recommendation = InlineKeyboardMarkup(inline_keyboard=[
+    [
+        InlineKeyboardButton(text='1️⃣', callback_data='recommend_1'),
+        InlineKeyboardButton(text='2️⃣', callback_data='recommend_2'),
+        InlineKeyboardButton(text='3️⃣', callback_data='recommend_3'),
+        InlineKeyboardButton(text='4️⃣', callback_data='recommend_4'),
+        InlineKeyboardButton(text='5️⃣', callback_data='recommend_5'),
+    ],
+    [
+        InlineKeyboardButton(text='6️⃣', callback_data='recommend_6'),
+        InlineKeyboardButton(text='7️⃣', callback_data='recommend_7'),
+        InlineKeyboardButton(text='8️⃣', callback_data='recommend_8'),
+        InlineKeyboardButton(text='9️⃣', callback_data='recommend_9'),
+        InlineKeyboardButton(text='🔟', callback_data='recommend_10'),
+    ],
+])
