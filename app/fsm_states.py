@@ -22,3 +22,4 @@ class Survey(StatesGroup):
     news = State()
     wishes = State()
     recommendation = State()
+    explanation = State()

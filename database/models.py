@@ -41,5 +41,6 @@ class Survey(Base):
     news: Mapped[str] = mapped_column(String(150), nullable=True)
     wishes: Mapped[str] = mapped_column(String(300), nullable=True)
     recommendation: Mapped[str] = mapped_column(String(300), nullable=True)
+    explanation: Mapped[str] = mapped_column(String(300), nullable=True)
 
     user: Mapped['User'] = relationship(back_populates='survey')

@@ -60,6 +60,7 @@ async def orm_survey(session: AsyncSession, user_id: int, data: dict):
         news=data['news'],
         wishes=data['wishes'],
         recommendation=data['recommendation'],
+        explanation=data['explanation'],
     )
     session.add(data)
     await session.commit()

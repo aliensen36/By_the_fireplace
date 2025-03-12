@@ -2,9 +2,8 @@ from aiogram import F, Router
 from aiogram.types import (CallbackQuery, Message)
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, FSInputFile
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.fsm_states import *
 from app.handlers.start_handler import start_router
 from aiogram.fsm.state import default_state
@@ -18,7 +17,7 @@ survey_router = Router()
 # Обработчик начала анкетирования
 @survey_router.message(F.text == '📝 Заполнить анкету')
 async def survey_start(message: Message, state: FSMContext):
-    await message.answer(survey_message, reply_markup=reply_kb.cancel_keyboard)
+    await message.answer(survey_start_message, reply_markup=reply_kb.cancel_keyboard)
     await message.answer("1. Сколько вам лет?",
                          reply_markup=inline_kb.kb_age)
     await state.set_state(Registration.age_group)
@@ -280,7 +279,7 @@ async def survey_news_text(message: Message, state: FSMContext):
     await state.set_state(Survey.wishes)
 
 
-# Обработчик шкалы рекомендаций (вопрос 16)
+# Обработчик для пожеланий (вопрос 16)
 @survey_router.callback_query(Survey.wishes)
 async def survey_wishes(callback: CallbackQuery, state: FSMContext):
     await state.update_data(wishes=callback.data)
@@ -292,48 +291,90 @@ async def survey_wishes(callback: CallbackQuery, state: FSMContext):
     await state.set_state(Survey.recommendation)
 
 
+# Обработчик текстового ответа на вопрос 16
+@survey_router.message(Survey.wishes)
+async def survey_wishes_text(message: Message, state: FSMContext):
+    await state.update_data(wishes=message.text)
+    await message.answer("Спасибо! Ваш ответ записан. ✅")
+    await message.answer("17. Насколько вы готовы рекомендовать "
+                         "нас друзьям по шкале от 1 (не готов) до 10 "
+                         "(обязательно порекомендую)?",
+                         reply_markup=inline_kb.kb_recommendation)
+    await state.set_state(Survey.recommendation)
 
 
-
-# Запись в БД. Добавить обработку ошибок
-# @survey_router.callback_query(Survey.improvements,
-#                               F.data.in_(['update_menu', 'update_interior',
-#                                           'lower_prices', 'better_music']))
-# async def survey_improvements(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
-#     await state.update_data(improvements=callback.data)
-#     await callback.answer()
-#     # await state.set_state(Survey.obstacles)
-#     data = await state.get_data()
-#     await orm_survey(session, user_id=callback.from_user.id, data=data)
-#     await state.clear()
+# Обработчик для шкалы рекомендаций (вопрос 17)
+@survey_router.callback_query(Survey.recommendation)
+async def survey_recommendation(callback: CallbackQuery, state: FSMContext):
+    await state.update_data(recommendation=callback.data)
+    await callback.answer()
+    await callback.message.edit_text("18. И последний вопрос. Почему вы "
+                                     "поставили такую оценку? Напишите текстом.",
+                                     reply_markup=inline_kb.kb_skip)
+    await state.set_state(Survey.explanation)
 
 
+# Обработчик для пояснения (вопрос 18)
+@survey_router.callback_query(Survey.explanation)
+async def survey_explanation(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
+    await state.update_data(explanation=callback.data)
+    await callback.answer()
 
-# Обработчик выбора
-# @survey_router.callback_query(Survey.,
-#                               F.data.in_([]))
-# async def survey_(callback: CallbackQuery, state: FSMContext):
-#     await state.update_data(=callback.data)
-#     await callback.answer()
-#     await callback.message.edit_text("",
-#                                      reply_markup=inline_kb.)
-#     await state.set_state(Survey.)
+    data = await state.get_data()
+    await orm_survey(session, user_id=callback.from_user.id, data=data)
+
+    photo_path = 'docs/present.jpg'
+    await callback.message.answer_photo(photo=FSInputFile(photo_path),
+                                        caption=survey_finish_message)
+    await callback.message.answer('Выберите действие 👇',
+                                  reply_markup=reply_kb.get_keyboard(
+                                      '🍽️ У камина', '📋️ Меню',
+                                      '📅🍽️ Забронировать стол', '🚚️ Доставка',
+                                      '📍 Путь к нам', '🎁 Программа лояльности',
+                                      '📝️ Оставить отзыв', '🛎️  Вызов официанта',
+                                      '📝 Заполнить анкету',
+                                      placeholder="Что вас интересует?",
+                                      sizes=(2, 1, 2, 1, 2, 1),
+                                  ))
+
+    await state.clear()
 
 
+# Обработчик текстового ответа на вопрос 18
+@survey_router.message(Survey.explanation)
+async def survey_explanation_text(message: Message, state: FSMContext,
+                                  session: AsyncSession):
+    await state.update_data(explanation=message.text)
+    await message.answer("Спасибо! Ваш ответ записан. ✅")
 
-# Обработчик текстового ответа на вопрос
-# @survey_router.message(Survey.)
-# async def survey_ _text(message: Message, state: FSMContext):
-#     await state.update_data(=message.text)
-#     await message.answer("Спасибо! Ваш ответ записан. ✅")
-#     await message.answer("",
-#                          reply_markup=inline_kb.)
-#     await state.set_state(Survey.)
+    data = await state.get_data()
+    await orm_survey(session, user_id=message.from_user.id, data=data)
+
+    photo_path = 'docs/present.jpg'
+    await message.answer_photo(photo=FSInputFile(photo_path),
+                               caption=survey_finish_message)
+    await message.answer('Выберите действие 👇',
+                         reply_markup=reply_kb.get_keyboard(
+                             '🍽️ У камина', '📋️ Меню',
+                             '📅🍽️ Забронировать стол', '🚚️ Доставка',
+                             '📍 Путь к нам', '🎁 Программа лояльности',
+                             '📝️ Оставить отзыв', '🛎️  Вызов официанта',
+                             '📝 Заполнить анкету',
+                             placeholder="Что вас интересует?",
+                             sizes=(2, 1, 2, 1, 2, 1),
+                         ))
+    await state.clear()
 
 
 # Обработчик кнопки 'Отмена'
 @survey_router.message(F.text == 'Отмена')
 async def back_to_main_menu(message: Message):
     await message.answer(text="Выберите 👇",
-                         reply_markup=reply_kb.main)
+                         reply_markup=reply_kb.get_keyboard(
+                             '🍽️ У камина', '📋️ Меню', '📅🍽️ Забронировать стол',
+                             '🚚️ Доставка', '📍 Путь к нам', '🎁 Программа лояльности',
+                             '📝️ Оставить отзыв', '🛎️  Вызов официанта', '📝 Заполнить анкету',
+                             placeholder="Что вас интересует?",
+                             sizes=(2, 1, 2, 1, 2, 1),
+                         ))
 
