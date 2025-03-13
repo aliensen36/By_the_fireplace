@@ -28,7 +28,7 @@ async def restaurant_description(message: Message):
 async def show_menu_options(message: Message):
     await message.answer("Выберите нужное вам меню👇",
                          reply_markup=reply_kb.get_keyboard(
-                             '🍽️ Основное меню',
+                             '🍽️Основное меню',
                              '👶 Детское меню',
                              '⬅️ Назад',
                              placeholder="Что вас интересует?",
@@ -37,12 +37,20 @@ async def show_menu_options(message: Message):
     )
 
 # Обработчик кнопки '🍽️ Основное меню'
-@router.message(F.text == '🍽️ Основное меню')
+@router.message(F.text == '🍽️Основное меню')
 async def send_main_menu_pdf(message: Message):
     file_path = 'docs/Main_menu.pdf'
     pdf = FSInputFile(path=file_path, filename='Main_menu.pdf')
     await message.answer_document(document=pdf,
-                                  caption="Основное меню центрального зала")
+                                  caption="Основное меню центрального зала",
+                                  reply_markup=reply_kb.get_keyboard(
+                                      '🍽️Основное меню',
+                                      '👶 Детское меню',
+                                      '⬅️ Назад',
+                                      placeholder="Что вас интересует?",
+                                      sizes=(1,1,1),
+                                  )
+                                  )
 
 
 # Обработчик кнопки '👶 Детское меню'

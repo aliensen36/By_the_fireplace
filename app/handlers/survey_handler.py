@@ -20,11 +20,11 @@ async def survey_start(message: Message, state: FSMContext):
     await message.answer(survey_start_message, reply_markup=reply_kb.cancel_keyboard)
     await message.answer("1. Сколько вам лет?",
                          reply_markup=inline_kb.kb_age)
-    await state.set_state(Registration.age_group)
+    await state.set_state(Survey.age_group)
 
 
 # Обработчик выбора возраста (вопрос 1)
-@survey_router.callback_query(Registration.age_group,
+@survey_router.callback_query(Survey.age_group,
                               F.data.in_(['age_18_24', 'age_25_27', 'age_28_40',
                                           'age_41_55', 'age_55_plus']))
 async def survey_age_group(callback: CallbackQuery, state: FSMContext):
@@ -32,11 +32,11 @@ async def survey_age_group(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     await callback.message.edit_text("2. Где вы живете?",
                                   reply_markup=inline_kb.kb_residence)
-    await state.set_state(Registration.residence)
+    await state.set_state(Survey.residence)
 
 
 # Обработчик выбора места жительства (вопрос 2)
-@survey_router.callback_query(Registration.residence,
+@survey_router.callback_query(Survey.residence,
                               F.data.in_(['city', 'region', 'tourist']))
 async def survey_residence(callback: CallbackQuery, state: FSMContext):
     await state.update_data(residence=callback.data)

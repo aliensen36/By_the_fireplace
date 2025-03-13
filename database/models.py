@@ -12,11 +12,11 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     tg_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False)
-    name: Mapped[str] = mapped_column(String(150), nullable=True)
+    first_name: Mapped[str] = mapped_column(String(150), nullable=True)
+    last_name: Mapped[str] = mapped_column(String(150), nullable=True)
+    username: Mapped[str] = mapped_column(String(150), nullable=True)
     gender: Mapped[str] = mapped_column(String(10), nullable=True)
     profession: Mapped[str] = mapped_column(String(40), nullable=True)
-    age_group: Mapped[str] = mapped_column(String(40), nullable=True)
-    residence: Mapped[str] = mapped_column(String(150), nullable=True)
 
     survey: Mapped[list['Survey']] = relationship(back_populates='user', cascade='all, delete-orphan')
 
@@ -26,6 +26,8 @@ class Survey(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
+    age_group: Mapped[str] = mapped_column(String(40), nullable=True)
+    residence: Mapped[str] = mapped_column(String(150), nullable=True)
     company: Mapped[str] = mapped_column(String(150), nullable=True)
     reason: Mapped[str] = mapped_column(String(150), nullable=True)
     advertising_sources: Mapped[str] = mapped_column(String(150), nullable=True)

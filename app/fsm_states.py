@@ -3,10 +3,11 @@ from aiogram.fsm.state import State, StatesGroup
 class Registration(StatesGroup):
     gender = State()
     profession = State()
-    age_group = State()
-    residence = State()
+
 
 class Survey(StatesGroup):
+    age_group = State()
+    residence = State()
     company = State()
     reason = State()
     advertising_sources = State()
