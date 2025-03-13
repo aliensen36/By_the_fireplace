@@ -189,31 +189,38 @@ async def receive_feedback_text(message: Message, state: FSMContext,
 
 # Обработчик кнопки '✉️ Написать директору'
 @router.message(F.text == '✉️ Написать директору')
-async def feedback_to_boss(message: Message):
+async def feedback_to_boss(message: Message, state: FSMContext):
     await message.answer('📝 Оцените нас от 1 до 10 баллов или напишите '
                          'Свой отзыв и он прямиком улетит владельцу заведения.',
                          reply_markup=reply_kb.cancel_keyboard)
+    await state.set_state(FeedbackState.text_to_boss)
 
 
-# @router.message(Text)
-# async def receive_feedback_text(message: Message, session: AsyncSession):
-#     text = message.text
-#     tg_id = message.from_user.id
-#
-#     feedback = Feedback(tg_id=tg_id, text=text)
-#     session.add(feedback)
-#     await session.commit()
-#     await message.answer('Спасибо за ваш отзыв! ❤️')
+@router.message(StateFilter(FeedbackState.text_to_boss), Text)
+async def feedback_to_boss(message: Message, state: FSMContext,
+                           session: AsyncSession):
+    await state.update_data(text_to_boss=message.text)
+    text_to_boss = message.text
+    tg_id = message.from_user.id
 
-    # Отправка отзыва админам
-    # bot = message.bot
-    # user_id = message.from_user.id
-    # try:
-    #     await message.bot.send_message(user_id=-316851620,
-    #                            text=f'📬 Новый отзыв от @{message.from_user.username or tg_id}:\n\n{text}')
-    # except Exception as e:
-    #     print(f'Не удалось отправить отзыв директору: {e}')
+    feedback = Feedback(tg_id=tg_id, text_to_boss=text_to_boss)
+    session.add(feedback)
+    await session.commit()
+    await message.answer('Спасибо за ваш отзыв! ❤️')
 
+    # Отправка отзыва директору
+    bot = message.bot
+    try:
+        await bot.send_message(chat_id=-1002551570110,
+                               text="‼️‼️ Сообщение для директора ‼️‼️\n"
+                                    "@KateAlexandrova\n\n"
+                                    f"📬 Новый отзыв от @{message.from_user.username 
+                                                         or tg_id}:\n\n"
+                                    f"{text_to_boss}")
+    except Exception as e:
+        print(f'Не удалось отправить отзыв директору: {e}')
+
+    await state.clear()
 
 # Обработчик кнопки 'Отмена'
 @router.message(F.text == 'Отмена')
