@@ -1,5 +1,5 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import BigInteger, String, DateTime, func, ForeignKey
+from sqlalchemy import BigInteger, String, DateTime, func, ForeignKey, Text
 
 
 class Base(DeclarativeBase):
@@ -18,14 +18,17 @@ class User(Base):
     gender: Mapped[str] = mapped_column(String(10), nullable=True)
     profession: Mapped[str] = mapped_column(String(40), nullable=True)
 
-    survey: Mapped[list['Survey']] = relationship(back_populates='user', cascade='all, delete-orphan')
+    survey: Mapped[list['Survey']] = relationship(back_populates='user',
+                                                  cascade='all, delete-orphan')
+    feedback: Mapped[list['Feedback']] = relationship(back_populates='user',
+                                                  cascade='all, delete-orphan')
 
 
 class Survey(Base):
     __tablename__ = 'survey'
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
+    tg_id: Mapped[int] = mapped_column(ForeignKey('user.tg_id'), nullable=False)
     age_group: Mapped[str] = mapped_column(String(40), nullable=True)
     residence: Mapped[str] = mapped_column(String(150), nullable=True)
     company: Mapped[str] = mapped_column(String(150), nullable=True)
@@ -46,3 +49,14 @@ class Survey(Base):
     explanation: Mapped[str] = mapped_column(String(300), nullable=True)
 
     user: Mapped['User'] = relationship(back_populates='survey')
+
+
+class Feedback(Base):
+    __tablename__ = 'feedback'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    tg_id: Mapped[int] = mapped_column(ForeignKey('user.tg_id'), nullable=False)
+    text_to_chat: Mapped[str] = mapped_column(Text, nullable=True)
+    text_to_boss: Mapped[str] = mapped_column(Text, nullable=True)
+
+    user: Mapped['User'] = relationship(back_populates='feedback')

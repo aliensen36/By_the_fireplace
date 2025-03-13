@@ -16,8 +16,6 @@ start_router = Router()
 @start_router.message(CommandStart(), StateFilter(default_state))
 async def cmd_start(message: Message, state: FSMContext,
                     session: AsyncSession):
-    # await orm_reg(message=message, session=session)
-    # async with session_maker() as session:
     tg_user = message.from_user
 
     # Обработка отсутствия username

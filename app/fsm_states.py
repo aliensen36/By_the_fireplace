@@ -24,3 +24,8 @@ class Survey(StatesGroup):
     wishes = State()
     recommendation = State()
     explanation = State()
+
+
+class FeedbackState(StatesGroup):
+    text_to_chat = State()
+    text_to_boss = State()

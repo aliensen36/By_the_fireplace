@@ -2,16 +2,14 @@ from aiogram.types import message, FSInputFile, Message
 from sqlalchemy import select, update, insert
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.text import ios_instructions_message, android_instructions_message, welcome_message
 from database.models import *
 from database.engine import session_maker
-import app.keyboards.reply as reply_kb
-import app.keyboards.inline as inline_kb
 
 
-async def orm_survey(session: AsyncSession, user_id: int, data: dict):
+
+async def orm_survey(session: AsyncSession, tg_id: int, data: dict):
     data = Survey(
-        user_id=user_id,
+        tg_id=tg_id,
         age_group=data['age_group'],
         residence=data['residence'],
         company=data['company'],

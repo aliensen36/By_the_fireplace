@@ -30,10 +30,11 @@ bot.admins_list = []
 dp = Dispatcher(storage=MemoryStorage())
 
 dp.include_router(start_router)
+dp.include_router(user_group_router)
 dp.include_router(router)
 dp.include_router(survey_router)
 dp.include_router(admin_router)
-dp.include_router(user_group_router)
+
 
 async def on_startup(bot):
     run_param = False
