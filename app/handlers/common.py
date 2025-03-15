@@ -91,9 +91,4 @@ async def invite_friend(message: Message, bot: Bot):
 @router.message(F.text == 'Отмена')
 async def back_to_main_menu(message: Message):
     await message.answer(text="Выберите 👇",
-                         reply_markup=reply_kb.get_keyboard(
-                             '💬 Оставить отзыв',
-                             '✉️ Написать директору',
-                             '⬅️ Назад',
-                             sizes=(1,1,1))
-                         )
+                         reply_markup=reply_kb.main)

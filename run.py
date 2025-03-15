@@ -12,7 +12,7 @@ from database.engine import create_db, drop_db, session_maker
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.state import default_state, State, StatesGroup
 from middlewares.db import DataBaseSession
-from app.handlers.handlers import router
+from app.handlers.common import router
 from app.handlers.start import start_router
 from app.handlers.survey import survey_router
 from app.handlers.admin import admin_router

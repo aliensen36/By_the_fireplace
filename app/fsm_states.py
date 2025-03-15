@@ -38,6 +38,6 @@ class CallWaiterState(StatesGroup):
 class BookingState(StatesGroup):
     select_date = State()
     select_time = State()
-    enter_guests = State()
+    select_guests = State()
     confirm = State()
     cancel = State()

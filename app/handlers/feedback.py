@@ -90,10 +90,3 @@ async def feedback_to_boss(message: Message, state: FSMContext,
         print(f'Не удалось отправить отзыв директору: {e}')
 
     await state.clear()
-
-
-# Обработчик кнопки 'Отмена'
-@feedback_router.message(F.text == 'Отмена')
-async def back_to_main_menu(message: Message):
-    await message.answer(text="Выберите 👇",
-                         reply_markup=reply_kb.kb_feedback)
