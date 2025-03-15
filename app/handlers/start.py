@@ -52,16 +52,8 @@ async def cmd_start(message: Message, state: FSMContext,
         await message.answer("Кто Вы?", reply_markup=inline_kb.kb_gender)
     else:
         # Приветствие зарегистрированного пользователя
-        await message.answer(
-            "Добро пожаловать! 🎉\nС возвращением!",
-            reply_markup=reply_kb.get_keyboard(
-                '🍽️ У камина', '📋️ Меню', '📅🍽️ Забронировать стол',
-                '🚚️ Доставка', '📍 Путь к нам', '🎁 Программа лояльности',
-                '📝️ Оставить отзыв', '🛎️  Вызов официанта', '📝 Заполнить анкету',
-                placeholder="Что вас интересует?",
-                sizes=(2, 1, 2, 1, 2, 1),
-            )
-        )
+        await message.answer("Добро пожаловать! 🎉\nС возвращением!",
+                             reply_markup=reply_kb.main)
 
 
 @start_router.callback_query(StateFilter(Registration.gender), F.data.in_(
@@ -101,12 +93,5 @@ async def profession_choice(callback: CallbackQuery, state: FSMContext,
                                      "лояльности 💳")
     await callback.message.answer("Если кнопки скрыты, то нажми на иконку 🎛 "
                                   "в правом нижнем углу рядом с микрофоном 👌",
-                                  reply_markup=reply_kb.get_keyboard(
-                                      '🍽️ У камина', '📋️ Меню', '📅🍽️ Забронировать стол',
-                                      '🚚️ Доставка', '📍 Путь к нам', '🎁 Программа лояльности',
-                                      '📝️ Оставить отзыв', '🛎️  Вызов официанта', '📝 Заполнить анкету',
-                                      placeholder="Что вас интересует?",
-                                      sizes=(2,1,2,1,2,1)
-                                  )
-    )
+                                  reply_markup=reply_kb.main)
     await state.clear()

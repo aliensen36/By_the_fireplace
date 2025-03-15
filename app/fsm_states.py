@@ -5,7 +5,7 @@ class Registration(StatesGroup):
     profession = State()
 
 
-class Survey(StatesGroup):
+class SurveyState(StatesGroup):
     age_group = State()
     residence = State()
     company = State()
@@ -29,3 +29,15 @@ class Survey(StatesGroup):
 class FeedbackState(StatesGroup):
     text_to_chat = State()
     text_to_boss = State()
+
+
+class CallWaiterState(StatesGroup):
+    call_waiter = State()
+
+
+class BookingState(StatesGroup):
+    select_date = State()
+    select_time = State()
+    enter_guests = State()
+    confirm = State()
+    cancel = State()

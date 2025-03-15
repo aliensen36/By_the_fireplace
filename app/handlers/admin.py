@@ -33,18 +33,15 @@ async def change_dish(message: types.Message):
     await message.answer("Список блюд")
 
 
-@admin_router.message(F.text == "Удалить товар")
-async def delete_product(message: types.Message):
-    await message.answer("Выберите товар(ы) для удаления")
+@admin_router.message(F.text == "Удалить блюдо")
+async def delete_dish(message: types.Message):
+    await message.answer("Выберите блюдо для удаления")
 
 
-#Код ниже для машины состояний (FSM)
-
-@admin_router.message(F.text == "Добавить товар")
-async def add_product(message: types.Message):
-    await message.answer(
-        "Введите название товара", reply_markup=types.ReplyKeyboardRemove()
-    )
+@admin_router.message(F.text == "Добавить блюдо")
+async def add_dish(message: types.Message):
+    await message.answer("Введите название блюда",
+                         reply_markup=types.ReplyKeyboardRemove())
 
 
 @admin_router.message(Command("отмена"))
@@ -61,19 +58,19 @@ async def cancel_handler(message: types.Message) -> None:
 
 @admin_router.message(F.text)
 async def add_name(message: types.Message):
-    await message.answer("Введите описание товара")
+    await message.answer("Введите описание блюда")
 
 
 @admin_router.message(F.text)
 async def add_description(message: types.Message):
-    await message.answer("Введите стоимость товара")
+    await message.answer("Введите стоимость блюда")
 
 
 @admin_router.message(F.text)
 async def add_price(message: types.Message):
-    await message.answer("Загрузите изображение товара")
+    await message.answer("Загрузите изображение блюда")
 
 
 @admin_router.message(F.photo)
 async def add_image(message: types.Message):
-    await message.answer("Товар добавлен", reply_markup=ADMIN_KB)
+    await message.answer("Блюдо добавлено", reply_markup=ADMIN_KB)

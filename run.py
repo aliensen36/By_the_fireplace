@@ -2,9 +2,7 @@
 
 import os
 import asyncio
-
 from aiogram import Bot, Dispatcher, types
-
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -15,10 +13,13 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.state import default_state, State, StatesGroup
 from middlewares.db import DataBaseSession
 from app.handlers.handlers import router
-from app.handlers.start_handler import start_router
-from app.handlers.survey_handler import survey_router
+from app.handlers.start import start_router
+from app.handlers.survey import survey_router
 from app.handlers.admin import admin_router
 from app.handlers.user_group import user_group_router
+from app.handlers.feedback import feedback_router
+from app.handlers.waiter import waiter_router
+from app.handlers.booking import booking_router
 
 logging.basicConfig(level=logging.INFO)
 
@@ -34,6 +35,9 @@ dp.include_router(user_group_router)
 dp.include_router(router)
 dp.include_router(survey_router)
 dp.include_router(admin_router)
+dp.include_router(feedback_router)
+dp.include_router(waiter_router)
+dp.include_router(booking_router)
 
 
 async def on_startup(bot):
