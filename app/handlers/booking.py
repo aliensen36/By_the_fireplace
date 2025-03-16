@@ -1,15 +1,13 @@
 from aiogram import Router, F
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State, default_state
 from app.fsm_states import BookingState
 from aiogram.types import CallbackQuery
-from datetime import datetime
 from utils.calendar import get_calendar
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 import app.keyboards.reply as reply_kb
-from aiogram.filters import StateFilter
-
+import app.keyboards.inline as inline_kb
+from sqlalchemy.ext.asyncio import AsyncSession
+from database.orm_query import orm_booking
 
 booking_router = Router()
 
@@ -24,14 +22,10 @@ TIME_SLOTS = [
 # Функция для создания инлайн-клавиатуры для времени
 def time_inline_keyboard():
     keyboard = []
-    # Разбиваем список TIME_SLOTS на подсписки по 3 кнопки в каждом
     for i in range(0, len(TIME_SLOTS), 3):
         row = [InlineKeyboardButton(text=slot, callback_data=f"time:{slot}") for slot in TIME_SLOTS[i:i+3]]
         keyboard.append(row)
-
-    # Добавляем кнопку "⬅ Назад" в отдельной строке
     keyboard.append([InlineKeyboardButton(text="⬅ Назад", callback_data="back_to_date")])
-
     return InlineKeyboardMarkup(
         row_width=3,
         inline_keyboard=keyboard
@@ -47,13 +41,24 @@ def guests_inline_keyboard():
             for num in range(i, i + 5)
         ]
         keyboard.append(row)
-
-    # Добавляем кнопку "⬅ Назад"
     keyboard.append([
         InlineKeyboardButton(text="⬅ Назад", callback_data="back_to_time")
     ])
-
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+
+skip = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text="Пропустить", callback_data="skip")],
+    [InlineKeyboardButton(text="⬅ Назад", callback_data="back_to_guests")]
+])
+
+
+kb_confirm = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text="✅ Подтвердить", callback_data="client_confirm")],
+    [InlineKeyboardButton(text="⬅ Назад", callback_data="back_to_additional_info")]
+])
+
+
 
 
 # Обработчик кнопки '📅🍽️ Забронировать стол'
@@ -105,16 +110,6 @@ async def select_time(message: Message, state: FSMContext):
     await state.set_state(BookingState.select_guests)
 
 
-# Назад к дате
-@booking_router.callback_query(BookingState.select_time,
-                               F.data == "back_to_date")
-async def back_to_date_from_time(callback: CallbackQuery, state: FSMContext):
-    await state.set_state(BookingState.select_date)
-    kb = get_calendar()
-    await callback.message.edit_text("Выберите дату:",
-                                     reply_markup=kb)
-
-
 # Выбор времени
 @booking_router.callback_query(BookingState.select_time,
                                F.data.startswith("time:"))
@@ -131,6 +126,31 @@ async def select_time(callback: CallbackQuery, state: FSMContext):
     await state.set_state(BookingState.select_guests)
 
 
+# Назад к дате
+@booking_router.callback_query(BookingState.select_time,
+                               F.data == "back_to_date")
+async def back_to_date_from_time(callback: CallbackQuery, state: FSMContext):
+    await state.set_state(BookingState.select_date)
+    kb = get_calendar()
+    await callback.message.edit_text("Выберите дату:",
+                                     reply_markup=kb)
+
+
+# Выбор количества гостей
+@booking_router.callback_query(BookingState.select_guests,
+                               F.data.startswith("guests:"))
+async def select_guests(callback: CallbackQuery, state: FSMContext):
+    select_guests = callback.data.split(":")[1]
+    await state.update_data(select_guests=select_guests)
+    await callback.message.edit_text(f"Вы указали количество гостей: \n\n"
+                                     f" ✅ <b>{select_guests}</b>",
+                                     parse_mode="HTML")
+    await callback.message.answer("Напишите текстом дополнительную информацию "
+                                  "по Вашей брони.",
+                                  reply_markup=skip)
+    await state.set_state(BookingState.additional_info)
+
+
 # Назад ко времени бронирования
 @booking_router.callback_query(BookingState.select_guests,
                                F.data == "back_to_time")
@@ -140,29 +160,87 @@ async def back_to_time_from_guests(callback: CallbackQuery, state: FSMContext):
                                      reply_markup=time_inline_keyboard())
 
 
+# Дополнительная информация
+@booking_router.message(BookingState.additional_info)
+async def additional_info_text(message: Message, state: FSMContext):
+    additional_info = message.text
+    await state.update_data(additional_info=additional_info)
+    data = await state.get_data()
+    await message.answer(f"Готово! Данные Вашей брони:\n\n"
+                         f"📅 Дата: <b>{data.get('select_date')}</b>\n"
+                         f"⏰ Время: <b>{data.get('select_time')}</b>\n"
+                         f"👥 Гостей: <b>{data.get('select_guests')}</b>\n"
+                         f"📋 Доп. информация: <b>{data.get('additional_info')}</b>",
+                         parse_mode="HTML")
+    await message.answer("Если всё верно, нажмите 'Подтвердить'!",
+                         reply_markup=kb_confirm)
+    await state.set_state(BookingState.client_confirm)
 
-# Выбор количества гостей
-@booking_router.callback_query(BookingState.select_guests,
-                               F.data.startswith("guests:"))
-async def select_guests(callback: CallbackQuery, state: FSMContext):
-    select_guests = callback.data.split(":")[1]
-    await state.update_data(select_guests=select_guests)
-    await callback.message.edit_text(f"Вы указали ✅ <b>{select_guests}</b> "
-                                     f"гостей.", parse_mode="HTML")
-    await callback.message.answer("Напишите дополнительную информацию "
-                                  "по Вашей брони.",
-                                  reply_markup=)
-    await state.set_state(BookingState.)
 
-kb_skip
+# Пропустить дополнительную информацию
+@booking_router.callback_query(BookingState.additional_info, F.data == "skip")
+async def additional_info_skip(callback: CallbackQuery, state: FSMContext):
+    await state.update_data(additional_info="не указана")
+    data = await state.get_data()
+    await callback.answer()
+    await callback.message.edit_text("Готово! Данные Вашей брони:\n\n"
+                                     f"📅 Дата: <b>{data.get('select_date')}</b>\n"
+                                     f"⏰ Время: <b>{data.get('select_time')}</b>\n"
+                                     f"👥 Гостей: <b>{data.get('select_guests')}</b>\n"
+                                     f"📋 Доп. информация: <b>{data.get('additional_info')}</b>\n\n"
+                                     f"Если всё верно, нажмите 'Подтвердить'!",
+                                     parse_mode="HTML",
+                                     reply_markup=kb_confirm)
+    await state.set_state(BookingState.client_confirm)
 
 
-# Обработчик
-@booking_router.message(F.text == '📅🍽️ Забронировать стол')
-async def start_booking(message: Message, state: FSMContext):
-    await state.set_state(BookingState.select_date)
-    kb = get_calendar()
-    await message.answer('Отлично! Давайте забронируем столик.\n\n',
-                         reply_markup=reply_kb.cancel_keyboard)
-    await message.answer('🗓 Выберите дату бронирования:',
-                         reply_markup=kb)
+# Назад к количеству гостей
+@booking_router.callback_query(BookingState.additional_info,
+                               F.data == "back_to_guests")
+async def back_to_guests_from_additional_info(callback: CallbackQuery, state: FSMContext):
+    await state.set_state(BookingState.select_guests)
+    await callback.message.edit_text("Выберите количество гостей:",
+                                     reply_markup=guests_inline_keyboard())
+
+# Подтверждение брони
+@booking_router.callback_query(BookingState.client_confirm, F.data == "client_confirm")
+async def client_confirm(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
+    await callback.answer()
+    await callback.message.answer("🎉 <b>Спасибо за бронирование!</b>\n\n"
+                                  "Мы скоро свяжемся с Вами 💬 😊",
+                                  parse_mode="HTML")
+    data = await state.get_data()
+    await orm_booking(session, tg_id=callback.from_user.id, data=data)
+
+    # Отправка брони админам
+    bot = callback.bot
+    try:
+        await bot.send_message(chat_id=-1002551570110,
+                               text="Заявка на бронирование стола:\n\n"
+                                    f"📅 Дата: <b>{data.get('select_date')}</b>\n"
+                                    f"⏰ Время: <b>{data.get('select_time')}</b>\n"
+                                    f"👥 Гостей: <b>{data.get('select_guests')}</b>\n"
+                                    f"📋 Доп. информация: <b>{data.get('additional_info')}</b>\n\n"
+                                    f"👤 Имя: <b>{callback.from_user.first_name}</b>\n"
+                                    f"👤 Фамилия: <b>{callback.from_user.last_name}</b>\n"
+                                    f"🆔 <b>@{callback.from_user.username}</b>",
+                               parse_mode="HTML")
+    except Exception as e:
+        print(f'Не удалось отправить отзыв директору: {e}')
+
+    await state.clear()
+    # await state.set_state(BookingState.waiting_for_confirm)
+
+
+# Назад к дополнительной информации
+@booking_router.callback_query(BookingState.client_confirm, F.data == "back_to_additional_info")
+async def back_to_additional_info(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    current_info = data.get("additional_info", "не указана")
+    await state.set_state(BookingState.additional_info)
+    await callback.message.edit_text(
+        f"Дополнительная информация:\n\n<b>{current_info}</b>\n\n"
+        "Можете изменить или отправить новую информацию.",
+        parse_mode="HTML",
+        reply_markup=inline_kb.kb_skip
+    )

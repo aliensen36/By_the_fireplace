@@ -39,5 +39,7 @@ class BookingState(StatesGroup):
     select_date = State()
     select_time = State()
     select_guests = State()
-    confirm = State()
+    additional_info = State()
+    client_confirm = State()
+    waiting_for_confirm = State()
     cancel = State()

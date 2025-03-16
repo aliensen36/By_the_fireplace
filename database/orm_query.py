@@ -2,10 +2,12 @@ from aiogram.types import message, FSInputFile, Message
 from sqlalchemy import select, update, insert
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
 from database.models import *
 from database.engine import session_maker
-
-
+from datetime import datetime
+from app.fsm_states import BookingState
 
 async def orm_survey(session: AsyncSession, tg_id: int, data: dict):
     data = Survey(
@@ -31,3 +33,86 @@ async def orm_survey(session: AsyncSession, tg_id: int, data: dict):
     )
     session.add(data)
     await session.commit()
+
+
+
+# async def orm_booking(session: AsyncSession, tg_id: int, data: dict):
+#     # Считываем данные из состояния
+#     select_date = data.get("select_date")
+#     select_time = data.get("select_time")
+#     select_guests = int(data.get("select_guests"))
+#     additional_info = data.get("additional_info", "не указана")
+#
+#     # Преобразуем select_date в объект Date и select_time в объект Time
+#     date_obj = datetime.strptime(select_date, "%d.%m.%Y").date()
+#     time_obj = datetime.strptime(select_time, "%H:%M").time()
+#
+#     # Создаем объект бронирования
+#     booking = Booking(
+#         tg_id=tg_id,
+#         select_date=date_obj,
+#         select_time=time_obj,
+#         select_guests=select_guests,
+#         additional_info=additional_info
+#     )
+#
+#     # Добавляем бронирование в сессию и коммитим
+#     session.add(booking)
+#     await session.commit()
+
+
+
+async def orm_booking(session: AsyncSession, tg_id: int, data: dict):
+    # Считываем данные из состояния
+    select_date = data.get("select_date")
+    select_time = data.get("select_time")
+    select_guests = int(data.get("select_guests"))
+    additional_info = data.get("additional_info", "не указана")
+
+    # Преобразуем select_date в объект Date и select_time в объект Time
+    date_obj = datetime.strptime(select_date, "%d.%m.%Y").date()
+    time_obj = datetime.strptime(select_time, "%H:%M").time()
+
+    # Получаем бронирование, если оно уже существует
+    stmt = select(Booking).where(Booking.tg_id == tg_id, Booking.client_confirm == False).order_by(Booking.id.desc())
+    result = await session.execute(stmt)
+    booking = result.scalars().first()
+
+    if booking:
+        # Если бронь существует, обновляем поля
+        booking.select_date = date_obj
+        booking.select_time = time_obj
+        booking.select_guests = select_guests
+        booking.additional_info = additional_info
+        booking.client_confirm = True  # Подтверждаем бронирование
+
+        # Сохраняем изменения
+        await session.commit()
+    else:
+        # Если бронирование не найдено, создаем новое
+        booking = Booking(
+            tg_id=tg_id,
+            select_date=date_obj,
+            select_time=time_obj,
+            select_guests=select_guests,
+            additional_info=additional_info,
+            client_confirm=True  # Подтверждаем бронирование сразу
+        )
+
+        # Добавляем новое бронирование в сессию и коммитим
+        session.add(booking)
+        await session.commit()
+
+
+async def get_new_bookings(session: AsyncSession) -> list[Booking]:
+    stmt = (
+        select(Booking)
+        .options(selectinload(Booking.user))
+        .where(
+            Booking.client_confirm == True,
+            Booking.admin_confirm == False
+        )
+        .order_by(Booking.created.desc())
+    )
+    result = await session.execute(stmt)
+    return result.scalars().all()

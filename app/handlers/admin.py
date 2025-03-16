@@ -1,76 +1,77 @@
 from aiogram import F, Router, types
 from aiogram.filters import Command
-
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.filters.chat_types import ChatTypeFilter, IsAdmin
-from app.keyboards.reply import get_keyboard
+from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
+from aiogram.utils.keyboard import ReplyKeyboardBuilder
+from database.orm_query import get_new_bookings
+
 
 admin_router = Router()
 admin_router.message.filter(ChatTypeFilter(["private"]), IsAdmin())
 
 
-ADMIN_KB = get_keyboard(
-    'Добавить блюдо',
-    'Изменить блюдо',
-    'Удалить блюдо',
-    'Просмотреть',
-    placeholder="Выберите действие",
-    sizes=(2,2),
-)
+# Главная клавиатура
+admin_main = ReplyKeyboardMarkup(keyboard=[
+    [KeyboardButton(text='Брони')],
+],
+    resize_keyboard=True,
+    input_field_placeholder='Выберите действие')
 
 
+kb_booking = ReplyKeyboardMarkup(keyboard=[
+    [KeyboardButton(text='Новые заявки')],
+    [KeyboardButton(text='Подтвержденные заявки')],
+    [KeyboardButton(text='Отмененные заявки')],
+    [KeyboardButton(text='⬅️ Назад')],
+],
+    resize_keyboard=True)
+
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+def admin_booking_keyboard(booking_id: int) -> InlineKeyboardMarkup:
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="✅ Подтвердить", callback_data=f"admin_confirm:{booking_id}"),
+            InlineKeyboardButton(text="❌ Отменить", callback_data=f"admin_cancel:{booking_id}"),
+        ],
+        [
+            InlineKeyboardButton(text="✉️ Написать клиенту", callback_data=f"admin_message:{booking_id}")
+        ]
+    ])
+    return keyboard
+
+# /admin
 @admin_router.message(Command("admin"))
-async def add_dish(message: types.Message):
-    await message.answer("Что хотите сделать?", reply_markup=ADMIN_KB)
+async def confirmation(message: Message):
+    await message.answer("Что хотите сделать?", reply_markup=admin_main)
 
 
-@admin_router.message(F.text == 'Просмотреть')
-async def starring_at_dish(message: types.Message):
-    await message.answer("Список блюд")
+@admin_router.message(F.text == 'Брони')
+async def booking(message: types.Message):
+    await message.answer("Выберите действие", reply_markup=kb_booking)
 
 
-@admin_router.message(F.text == 'Изменить блюдо')
-async def change_dish(message: types.Message):
-    await message.answer("Список блюд")
+@admin_router.message(F.text == 'Новые заявки')
+async def new_orders(message: types.Message, session: AsyncSession):
+    await message.answer("Новые зявки")
+    bookings = await get_new_bookings(session)
 
+    if not bookings:
+        await message.answer("Нет новых заявок.")
+        return
 
-@admin_router.message(F.text == "Удалить блюдо")
-async def delete_dish(message: types.Message):
-    await message.answer("Выберите блюдо для удаления")
-
-
-@admin_router.message(F.text == "Добавить блюдо")
-async def add_dish(message: types.Message):
-    await message.answer("Введите название блюда",
-                         reply_markup=types.ReplyKeyboardRemove())
-
-
-@admin_router.message(Command("отмена"))
-@admin_router.message(F.text.casefold() == "отмена")
-async def cancel_handler(message: types.Message) -> None:
-    await message.answer("Действия отменены", reply_markup=ADMIN_KB)
-
-
-@admin_router.message(Command("назад"))
-@admin_router.message(F.text.casefold() == "назад")
-async def cancel_handler(message: types.Message) -> None:
-    await message.answer(f"ок, вы вернулись к прошлому шагу")
-
-
-@admin_router.message(F.text)
-async def add_name(message: types.Message):
-    await message.answer("Введите описание блюда")
-
-
-@admin_router.message(F.text)
-async def add_description(message: types.Message):
-    await message.answer("Введите стоимость блюда")
-
-
-@admin_router.message(F.text)
-async def add_price(message: types.Message):
-    await message.answer("Загрузите изображение блюда")
-
-
-@admin_router.message(F.photo)
-async def add_image(message: types.Message):
-    await message.answer("Блюдо добавлено", reply_markup=ADMIN_KB)
+    for b in bookings:
+        await message.answer(text='Заявка на бронирование стола\n\n'
+                                  f" Номер <b>{b.id}</b>\n"
+                                  f" Создана <b>{b.created}</b>\n\n"
+                                  f"📅 Дата: <b>{b.select_date.strftime('%d.%m.%Y')}</b>\n"
+                                  f"⏰ Время: <b>{b.select_time}</b>\n"
+                                  f"👥 Гостей: <b>{b.select_guests}</b>\n"
+                                  f"📋 Доп. информация: <b>{b.additional_info}</b>\n\n"
+                                  f"👤 Имя: <b>{b.user.first_name}</b>\n"
+                                  f"👤 Фамилия: <b>{b.user.last_name}</b>\n"
+                                  f"🆔 <b>@{b.user.username}</b>",
+                             parse_mode="HTML",
+                             reply_markup=admin_booking_keyboard(b.id))

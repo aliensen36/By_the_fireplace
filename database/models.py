@@ -1,5 +1,5 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import BigInteger, String, DateTime, func, ForeignKey, Text
+from sqlalchemy import BigInteger, Integer, Boolean, String, DateTime, Date, Time, func, ForeignKey, Text
 
 
 class Base(DeclarativeBase):
@@ -22,6 +22,8 @@ class User(Base):
                                                   cascade='all, delete-orphan')
     feedback: Mapped[list['Feedback']] = relationship(back_populates='user',
                                                   cascade='all, delete-orphan')
+    booking: Mapped[list['Booking']] = relationship(back_populates='user',
+                                                    cascade='all, delete-orphan')
 
 
 class Survey(Base):
@@ -60,3 +62,18 @@ class Feedback(Base):
     text_to_boss: Mapped[str] = mapped_column(Text, nullable=True)
 
     user: Mapped['User'] = relationship(back_populates='feedback')
+
+
+class Booking(Base):
+    __tablename__ = 'booking'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    tg_id: Mapped[int] = mapped_column(ForeignKey('user.tg_id'), nullable=False)
+    select_date: Mapped[Date] = mapped_column(Date, nullable=False)
+    select_time: Mapped[Time] = mapped_column(Time, nullable=False)
+    select_guests: Mapped[int] = mapped_column(Integer, nullable=False)
+    additional_info: Mapped[str] = mapped_column(String(300), nullable=True)
+    client_confirm: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    admin_confirm: Mapped[bool] = mapped_column(Boolean, nullable=True, default=False)
+
+    user: Mapped['User'] = relationship(back_populates='booking')

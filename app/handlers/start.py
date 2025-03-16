@@ -59,7 +59,12 @@ async def cmd_start(message: Message, state: FSMContext,
 @start_router.callback_query(StateFilter(Registration.gender), F.data.in_(
     ['male', 'female']))
 async def gender_choice(callback: CallbackQuery, state: FSMContext):
-    await state.update_data(gender=callback.data)
+    gender_mapping = {
+        'male': 'Мужчина',
+        'female': 'Женщина'
+    }
+    gender = gender_mapping.get(callback.data)
+    await state.update_data(gender=gender)
     await state.set_state(Registration.profession)
     await callback.message.edit_text("Здорово! 😃 \n\nРасскажи, чем ты занимаешься?",
                                      reply_markup=inline_kb.kb_profession)
@@ -71,8 +76,15 @@ async def gender_choice(callback: CallbackQuery, state: FSMContext):
                                          'freelancer']))
 async def profession_choice(callback: CallbackQuery, state: FSMContext,
                             session: AsyncSession):
+    profession_mapping = {
+        'student': 'Студент',
+        'businessman': 'Предприниматель',
+        'employee': 'Сотрудник',
+        'freelancer': 'Фрилансер'
+    }
+    profession = profession_mapping.get(callback.data)
     tg_user = callback.from_user
-    await state.update_data(profession=callback.data)
+    await state.update_data(profession=profession)
     await callback.answer()
 
     data = await state.get_data()
