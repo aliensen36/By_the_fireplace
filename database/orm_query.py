@@ -73,7 +73,8 @@ async def get_new_bookings(session: AsyncSession) -> list[Booking]:
         .options(selectinload(Booking.user))
         .where(
             Booking.client_confirm == True,
-            Booking.admin_confirm == False
+            Booking.admin_confirm == False,
+            Booking.admin_cancelled == False
         )
     )
     result = await session.execute(stmt)

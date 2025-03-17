@@ -90,7 +90,6 @@ async def confirm_booking(callback: CallbackQuery, session: AsyncSession):
         .values(
             admin_confirm=True,
             admin_action_time=datetime.utcnow(),
-            # admin_comment="Подтверждено админом"
         )
         .execution_options(synchronize_session="fetch")
     )
@@ -128,42 +127,53 @@ async def confirm_booking(callback: CallbackQuery, session: AsyncSession):
 async def cancel_booking(callback: CallbackQuery, session: AsyncSession):
     booking_id = int(callback.data.split(":")[1])
 
-    stmt = (
-        update(Booking)
-        .where(Booking.id == booking_id)
-        .values(
-            admin_cancelled=True,
-            admin_action_time=datetime.utcnow(),
-        )
-        .execution_options(synchronize_session="fetch")
-    )
-
-    await session.execute(stmt)
-    await session.commit()
-
-    # Получаем бронирование, чтобы показать клиенту или админу подтверждение
-    booking_stmt = select(Booking).where(Booking.id == booking_id)
-    result = await session.execute(booking_stmt)
-    booking = result.scalar_one_or_none()
-
-    if booking:
-        await callback.message.edit_reply_markup()  # убираем кнопки
-        await callback.message.answer(f"❌ Заявка №{booking.id} отменена.")
-
-        # Отправка уведомления клиенту:
-        await callback.bot.send_message(
-            booking.tg_id,
-            text=f"❌ Ваша заявка на бронирование была отменена администратором.\n"
-                 f"📅 Дата: {booking.select_date.strftime('%d.%m.%Y')}\n"
-                 f"⏰ Время: {booking.select_time}\n"
-                 f"👥 Гостей: {booking.select_guests}\n"
-                 f"📋 Доп. информация: <b>{booking.additional_info}</b>",
-            parse_mode="HTML",
-        )
-    else:
-        await callback.message.answer("Заявка не найдена.")
-
+    # Запрашиваем комментарий у администратора
+    await callback.message.edit_text("❌ Пожалуйста, напишите комментарий для отмены брони.")
     await callback.answer()
+
+    # Ожидаем получения комментария от администратора
+    @admin_router.message()
+    async def handle_comment(message: types.Message, session: AsyncSession):
+        # Получаем комментарий
+        admin_comment = message.text
+
+        # Обновляем информацию о бронировании в БД
+        stmt = (
+            update(Booking)
+            .where(Booking.id == booking_id)
+            .values(
+                admin_cancelled=True,
+                admin_action_time=datetime.utcnow(),
+                admin_comment=admin_comment,
+            )
+            .execution_options(synchronize_session="fetch")
+        )
+
+        await session.execute(stmt)
+        await session.commit()
+
+        # Получаем бронирование, чтобы показать клиенту или админу подтверждение
+        booking_stmt = select(Booking).where(Booking.id == booking_id)
+        result = await session.execute(booking_stmt)
+        booking = result.scalar_one_or_none()
+        await message.answer(f"❌ Заявка №{booking.id} отменена.\n\n"
+                             f"Комментарий: {admin_comment}")
+        if booking:
+            await message.answer(f"❌ Заявка №{booking.id} отменена. Комментарий: {admin_comment}")
+
+            # Отправка уведомления клиенту:
+            await callback.bot.send_message(
+                booking.tg_id,
+                text=f"❌ Ваша заявка на бронирование была отменена администратором.\n"
+                     f"📅 Дата: {booking.select_date.strftime('%d.%m.%Y')}\n"
+                     f"⏰ Время: {booking.select_time}\n"
+                     f"👥 Гостей: {booking.select_guests}\n"
+                     f"📋 Доп. информация: <b>{booking.additional_info}</b>\n\n"
+                     f"💬 Комментарий администратора: <b>{admin_comment}</b>",
+                parse_mode="HTML",
+            )
+        else:
+            await message.answer("Заявка не найдена.")
 
 
 @admin_router.message(F.text == '✅ Подтвержденные заявки')
@@ -222,7 +232,14 @@ async def canceled_orders(message: types.Message, session: AsyncSession):
 
 @admin_router.message(F.text == '📊 Сводка броней')
 async def booking_summary(message: types.Message, session: AsyncSession):
-    stmt = select(Booking).order_by(Booking.select_date, Booking.select_time)
+    stmt = (
+        select(Booking)
+        .where(
+            Booking.client_confirm == True,
+            Booking.admin_cancelled == False
+        )
+        .order_by(Booking.select_date, Booking.select_time)
+    )
     result = await session.execute(stmt)
     bookings = result.scalars().all()
 
@@ -266,7 +283,11 @@ def split_text(text, max_length=4000):
 @admin_router.message(F.text == '❌ Отмененные заявки')
 async def canceled_orders(message: types.Message, session: AsyncSession):
     await message.answer("Отмененные заявки:")
-    stmt = select(Booking).where(Booking.admin_confirm.is_(False)).order_by(Booking.select_date, Booking.select_time)
+    stmt = (
+        select(Booking)
+        .where(Booking.admin_cancelled == True)
+        .order_by(Booking.select_date, Booking.select_time)
+    )
     result = await session.execute(stmt)
     bookings = result.scalars().all()
 
