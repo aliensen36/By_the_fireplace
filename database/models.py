@@ -75,6 +75,7 @@ class Booking(Base):
     additional_info: Mapped[str] = mapped_column(String(300), nullable=True)
     client_confirm: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     admin_confirm: Mapped[bool] = mapped_column(Boolean, nullable=True, default=False)
+    admin_cancelled: Mapped[bool] = mapped_column(Boolean, nullable=True, default=False)
     admin_comment: Mapped[str] = mapped_column(String(300), nullable=True)
     admin_action_time: Mapped[DateTime] = mapped_column(DateTime, nullable=True)
 

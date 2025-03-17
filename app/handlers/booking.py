@@ -208,7 +208,8 @@ async def client_confirm(callback: CallbackQuery, state: FSMContext, session: As
     await callback.answer()
     await callback.message.answer("🎉 <b>Спасибо за бронирование!</b>\n\n"
                                   "Мы скоро свяжемся с Вами 💬 😊",
-                                  parse_mode="HTML")
+                                  parse_mode="HTML",
+                                  reply_markup=reply_kb.main)
     data = await state.get_data()
     await orm_booking(session, tg_id=callback.from_user.id, data=data)
 

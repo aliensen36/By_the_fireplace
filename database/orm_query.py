@@ -75,7 +75,6 @@ async def get_new_bookings(session: AsyncSession) -> list[Booking]:
             Booking.client_confirm == True,
             Booking.admin_confirm == False
         )
-        .order_by(Booking.created.desc())
     )
     result = await session.execute(stmt)
     return result.scalars().all()
@@ -88,7 +87,18 @@ async def get_confirmed_bookings(session: AsyncSession):
         .where(
             Booking.admin_confirm == True
         )
-        .order_by(Booking.created.desc())
+    )
+    result = await session.execute(stmt)
+    return result.scalars().all()
+
+
+async def get_canceled_bookings(session: AsyncSession):
+    stmt = (
+        select(Booking)
+        .options(selectinload(Booking.user))
+        .where(
+            Booking.admin_cancelled == True  # Фильтруем по заявкам, которые были отменены
+        )
     )
     result = await session.execute(stmt)
     return result.scalars().all()
