@@ -42,4 +42,5 @@ class BookingState(StatesGroup):
     additional_info = State()
     client_confirm = State()
     waiting_for_confirm = State()
+    waiting_for_message = State()
     cancel = State()

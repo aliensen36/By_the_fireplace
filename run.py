@@ -15,11 +15,12 @@ from middlewares.db import DataBaseSession
 from app.handlers.common import router
 from app.handlers.start import start_router
 from app.handlers.survey import survey_router
-from app.handlers.admin import admin_router
 from app.handlers.user_group import user_group_router
 from app.handlers.feedback import feedback_router
 from app.handlers.waiter import waiter_router
 from app.handlers.booking import booking_router
+from app.handlers.admin import admin_router
+from app.handlers.admin_booking import admin_booking_router
 
 logging.basicConfig(level=logging.INFO)
 
@@ -34,10 +35,11 @@ dp.include_router(start_router)
 dp.include_router(user_group_router)
 dp.include_router(router)
 dp.include_router(survey_router)
-dp.include_router(admin_router)
 dp.include_router(feedback_router)
 dp.include_router(waiter_router)
 dp.include_router(booking_router)
+dp.include_router(admin_router)
+dp.include_router(admin_booking_router)
 
 
 async def on_startup(bot):
