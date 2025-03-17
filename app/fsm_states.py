@@ -44,3 +44,8 @@ class BookingState(StatesGroup):
     waiting_for_confirm = State()
     waiting_for_message = State()
     cancel = State()
+
+
+class BroadcastState(StatesGroup):
+    waiting_for_text = State()
+    waiting_for_photo = State()

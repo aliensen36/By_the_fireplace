@@ -182,6 +182,7 @@ async def ask_admin_message(callback: CallbackQuery, state: FSMContext, session:
     await state.set_state(BookingState.waiting_for_message)
     await callback.answer()
 
+
 @admin_booking_router.message(BookingState.waiting_for_message)
 async def send_message_to_client(message: types.Message, state: FSMContext, session: AsyncSession):
     data = await state.get_data()
