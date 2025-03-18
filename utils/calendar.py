@@ -1,5 +1,5 @@
 import calendar
-from datetime import datetime
+from datetime import datetime, date
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 MONTH_NAMES = [
@@ -14,6 +14,7 @@ def get_calendar(year=None, month=None):
         year = now.year
         month = now.month
 
+    today = date.today()
     keyboard: list[list[InlineKeyboardButton]] = []
 
     # Название месяца
@@ -36,8 +37,15 @@ def get_calendar(year=None, month=None):
         if day == 0:
             week.append(InlineKeyboardButton(text=" ", callback_data="ignore"))
         else:
-            date_str = f"{day:02d}.{month:02d}.{year}"
-            week.append(InlineKeyboardButton(text=str(day), callback_data=f"select_date:{date_str}"))
+            button_date = date(year, month, day)
+            if button_date < today:
+                # Прошедшие дни — неактивные
+                week.append(InlineKeyboardButton(text=" ", callback_data="ignore"))
+            else:
+                # Активные будущие и сегодняшние дни
+                date_str = f"{day:02d}.{month:02d}.{year}"
+                week.append(InlineKeyboardButton(text=str(day), callback_data=f"select_date:{date_str}"))
+
         if len(week) == 7:
             keyboard.append(week)
             week = []

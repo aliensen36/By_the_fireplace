@@ -8,6 +8,8 @@ import app.keyboards.reply as reply_kb
 import app.keyboards.inline as inline_kb
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.orm_query import orm_booking
+from datetime import datetime
+
 
 booking_router = Router()
 
@@ -59,8 +61,6 @@ kb_confirm = InlineKeyboardMarkup(inline_keyboard=[
 ])
 
 
-
-
 # Обработчик кнопки '📅🍽️ Забронировать стол'
 @booking_router.message(F.text == '📅🍽️ Забронировать стол')
 async def start_booking(message: Message, state: FSMContext):
@@ -73,16 +73,28 @@ async def start_booking(message: Message, state: FSMContext):
 
 
 # Выбор даты
-@booking_router.callback_query(BookingState.select_date,
-                               F.data.startswith("select_date:"))
+@booking_router.callback_query(BookingState.select_date, F.data.startswith("select_date:"))
 async def select_date(callback: CallbackQuery, state: FSMContext):
-    selected_date = callback.data.split(":")[1]
-    await state.update_data(select_date=selected_date)
-    await callback.message.edit_text(f"Вы выбрали дату: \n\n"
-                                     f"✅ <b>{selected_date}</b>",
-                                     parse_mode="HTML")
-    await callback.message.answer('Теперь выберите время бронирования:',
-                                  reply_markup=time_inline_keyboard())
+    selected_date_str = callback.data.split(":")[1]
+    selected_date = datetime.strptime(selected_date_str, "%d.%m.%Y").date()
+    today = datetime.today().date()
+
+    if selected_date < today:
+        await callback.answer("Вы не можете выбрать прошедшую дату!", show_alert=True)
+        return
+
+    await state.update_data(select_date=selected_date_str)
+
+    await callback.message.edit_text(
+        f"Вы выбрали дату: \n\n✅ <b>{selected_date_str}</b>",
+        parse_mode="HTML"
+    )
+
+    await callback.message.answer(
+        "Теперь выберите время бронирования:",
+        reply_markup=time_inline_keyboard()
+    )
+
     await state.set_state(BookingState.select_time)
 
 
@@ -95,6 +107,7 @@ async def change_month(callback: CallbackQuery):
     year = int(year)
     kb = get_calendar(year, month)
     await callback.message.edit_reply_markup(reply_markup=kb)
+
 
 # Игнорируем ненужные клики
 @booking_router.callback_query(F.data == "ignore")
@@ -230,7 +243,7 @@ async def client_confirm(callback: CallbackQuery, state: FSMContext, session: As
         print(f'Не удалось отправить отзыв директору: {e}')
 
     await state.clear()
-    # await state.set_state(BookingState.waiting_for_confirm)
+
 
 
 # Назад к дополнительной информации
