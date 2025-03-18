@@ -66,25 +66,6 @@ async def delivery(message: Message):
     await message.answer(text)
 
 
-# Обработчик кнопки '🎁️ Программа лояльности'
-@router.message(F.text == '🎁️ Программа лояльности')
-async def loyalty_program(message: Message):
-    await message.answer(loyalty_program_message,
-                         reply_markup=reply_kb.kb_loyalty_program)
-
-
-# Обработчик кнопки '👥 Пригласи друга'
-@router.message(F.text == '👥 Пригласи друга')
-async def invite_friend(message: Message, bot: Bot):
-    await message.answer(invite_friend_message)
-    url = "https://t.me/myzhenatybot?start=5930bf6439955aa9917a2c30bc9aff2c"
-    text = f"Ссылка для приглашения.\n\nСсылку можно передать как в Telegram, " \
-             f"так и за его пределы.\n\n{url}"
-    button = InlineKeyboardButton(text="Отправить ссылку в ЛС",
-                                  switch_inline_query=f"\n\nПриглашаю тебя в бот ресторана "
-                                                      f"«У камина»!\n\nПерейди по ссылке:\n\n{url}")
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button]])
-    await message.answer(text, reply_markup=keyboard)
 
 
 # Обработчик кнопки 'Отмена'

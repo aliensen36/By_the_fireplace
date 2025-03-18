@@ -49,3 +49,9 @@ class BookingState(StatesGroup):
 class BroadcastState(StatesGroup):
     waiting_for_text = State()
     waiting_for_photo = State()
+
+
+class LoyaltyState(StatesGroup):
+    name = State()
+    surname = State()
+    birth_date = State()

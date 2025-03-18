@@ -21,6 +21,7 @@ from app.handlers.waiter import waiter_router
 from app.handlers.booking import booking_router
 from app.handlers.admin import admin_router
 from app.handlers.admin_booking import admin_booking_router
+from app.handlers.loyalty import loyalty_router
 
 logging.basicConfig(level=logging.INFO)
 
@@ -40,6 +41,7 @@ dp.include_router(waiter_router)
 dp.include_router(booking_router)
 dp.include_router(admin_router)
 dp.include_router(admin_booking_router)
+dp.include_router(loyalty_router)
 
 
 async def on_startup(bot):

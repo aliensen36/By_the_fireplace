@@ -12,9 +12,17 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     tg_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False)
+
+    # Имя и фамилия из Telegram
     first_name: Mapped[str] = mapped_column(String(150), nullable=True)
     last_name: Mapped[str] = mapped_column(String(150), nullable=True)
     username: Mapped[str] = mapped_column(String(150), nullable=True)
+
+    # Данные анкеты для карты лояльности
+    name: Mapped[str] = mapped_column(String(150), nullable=True)
+    surname: Mapped[str] = mapped_column(String(150), nullable=True)
+    birth_date: Mapped[Date] = mapped_column(Date, nullable=True)
+
     gender: Mapped[str] = mapped_column(String(10), nullable=True)
     profession: Mapped[str] = mapped_column(String(40), nullable=True)
 
@@ -24,6 +32,8 @@ class User(Base):
                                                   cascade='all, delete-orphan')
     booking: Mapped[list['Booking']] = relationship(back_populates='user',
                                                     cascade='all, delete-orphan')
+    loyalty_card: Mapped['LoyaltyCard'] = relationship(back_populates='user', uselist=False,
+                                                       cascade='all, delete-orphan')
 
 
 class Survey(Base):
@@ -80,3 +90,16 @@ class Booking(Base):
     admin_action_time: Mapped[DateTime] = mapped_column(DateTime, nullable=True)
 
     user: Mapped['User'] = relationship(back_populates='booking')
+
+
+class LoyaltyCard(Base):
+    __tablename__ = 'loyalty_card'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    tg_id: Mapped[int] = mapped_column(ForeignKey('user.tg_id'), nullable=False)
+    # name: Mapped[str] = mapped_column(ForeignKey('user.id'), nullable=False)
+    # surname: Mapped[str] = mapped_column(ForeignKey('user.id'), nullable=True)
+    # birth_date: Mapped[Date] = mapped_column(Date, nullable=True)
+    card_number: Mapped[int] = mapped_column(Integer, unique=True, nullable=True )
+
+    user: Mapped['User'] = relationship(back_populates='loyalty_card')

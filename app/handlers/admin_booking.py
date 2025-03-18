@@ -7,6 +7,7 @@ from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 from app.fsm_states import BookingState
+from app.handlers import admin
 from database.orm_query import get_new_bookings, get_confirmed_bookings, get_canceled_bookings
 from sqlalchemy import update, select
 from datetime import datetime
@@ -107,10 +108,10 @@ async def confirm_booking(callback: CallbackQuery, session: AsyncSession):
         # Отправка уведомления клиенту:
         await callback.bot.send_message(
             booking.tg_id,
-            text=f"✅ Ваша заявка на бронирование подтверждена!\n"
-                 f"📅 Дата: {booking.select_date.strftime('%d.%m.%Y')}\n"
-                 f"⏰ Время: {booking.select_time}\n"
-                 f"👥 Гостей: {booking.select_guests}\n"
+            text=f"✅ Ваша заявка на бронирование подтверждена!\n\n"
+                 f"📅 Дата: <b>{booking.select_date.strftime('%d.%m.%Y')}</b>\n"
+                 f"⏰ Время: <b>{booking.select_time.strftime('%H:%M')}</b>\n"
+                 f"👥 Гостей: <b>{booking.select_guests}</b>\n"
                  f"📋 Доп. информация: <b>{booking.additional_info}</b>",
             parse_mode="HTML",
         )
@@ -126,7 +127,8 @@ async def cancel_booking(callback: CallbackQuery, session: AsyncSession):
     booking_id = int(callback.data.split(":")[1])
 
     # Запрашиваем комментарий у администратора
-    await callback.message.edit_text("❌ Пожалуйста, напишите комментарий для отмены брони.")
+    await callback.message.edit_text("❌ Пожалуйста, напишите комментарий для отмены "
+                                     "брони.")
     await callback.answer()
 
     # Ожидаем получения комментария от администратора
@@ -157,12 +159,10 @@ async def cancel_booking(callback: CallbackQuery, session: AsyncSession):
         await message.answer(f"❌ Заявка №{booking.id} отменена.\n\n"
                              f"Комментарий: {admin_comment}")
         if booking:
-            await message.answer(f"❌ Заявка №{booking.id} отменена. Комментарий: {admin_comment}")
-
             # Отправка уведомления клиенту:
             await callback.bot.send_message(
                 booking.tg_id,
-                text=f"❌ Ваша заявка на бронирование была отменена администратором.\n"
+                text=f"❌ Ваша заявка на бронирование была отменена администратором.\n\n"
                      f"📅 Дата: {booking.select_date.strftime('%d.%m.%Y')}\n"
                      f"⏰ Время: {booking.select_time}\n"
                      f"👥 Гостей: {booking.select_guests}\n"
@@ -350,4 +350,5 @@ async def canceled_orders(message: types.Message, session: AsyncSession):
 
 @admin_booking_router.message(F.text == '⬅️  Назад')
 async def go_back_to_admin_menu(message: types.Message):
-    await message.answer("Вы вернулись в админ-меню.", reply_markup=admin_main)
+    await message.answer("Вы вернулись в админ-меню.",
+                         reply_markup=admin.admin_main)
