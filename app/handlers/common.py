@@ -1,9 +1,6 @@
-from aiogram.fsm.context import FSMContext
-from aiogram.types import (FSInputFile, Message, InlineKeyboardMarkup,
-                           InlineKeyboardButton)
-from aiogram import F, Router, types, Bot
+from aiogram.types import FSInputFile, Message
+from aiogram import F, Router
 import app.keyboards.reply as reply_kb
-from app.text import *
 
 
 router = Router()
@@ -64,8 +61,6 @@ async def location(message: Message):
 async def delivery(message: Message):
     text = "🍽️ Закажите любое блюдо домой или в офис 🍴\n\nhttps://restoranmyzhenaty.ru/"
     await message.answer(text)
-
-
 
 
 # Обработчик кнопки 'Отмена'

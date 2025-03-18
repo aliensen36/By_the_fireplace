@@ -97,9 +97,6 @@ class LoyaltyCard(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     tg_id: Mapped[int] = mapped_column(ForeignKey('user.tg_id'), nullable=False)
-    # name: Mapped[str] = mapped_column(ForeignKey('user.id'), nullable=False)
-    # surname: Mapped[str] = mapped_column(ForeignKey('user.id'), nullable=True)
-    # birth_date: Mapped[Date] = mapped_column(Date, nullable=True)
     card_number: Mapped[int] = mapped_column(Integer, unique=True, nullable=True )
 
     user: Mapped['User'] = relationship(back_populates='loyalty_card')
