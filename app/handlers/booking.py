@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup
 from aiogram.fsm.context import FSMContext
 from app.fsm_states import BookingState
 from aiogram.types import CallbackQuery
@@ -12,6 +12,16 @@ from datetime import datetime
 
 
 booking_router = Router()
+
+# Клавиатура с кнопкой "Поделиться номером телефона"
+request_phone_kb = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="📱 Поделиться номером телефона", request_contact=True)],
+        [KeyboardButton(text="❌ Отменить")]
+    ],
+    resize_keyboard=True,
+    one_time_keyboard=True
+)
 
 
 # Доступные временные интервалы для бронирования
@@ -81,11 +91,35 @@ async def get_client_name(message: Message, state: FSMContext):
         return
 
     await state.update_data(client_name=client_name)
+    await message.answer(f'Отлично! Столик бронирует <b>{client_name}</b>.',
+                         parse_mode="HTML")
+
+
+    await state.set_state(BookingState.client_phone)
+    await message.answer(
+        "📞 Пожалуйста, введите номер телефона или нажмите кнопку ниже, "
+        "чтобы отправить контакт:",
+        reply_markup=request_phone_kb
+    )
+
+
+# Обработка номера телефона
+@booking_router.message(BookingState.client_phone)
+async def get_client_phone(message: Message, state: FSMContext):
+    if message.contact:
+        phone_number = message.contact.phone_number
+    else:
+        phone_number = message.text.strip()
+
+    if not phone_number.startswith('+') or len(phone_number) < 10:
+        await message.answer("Номер телефона выглядит некорректным. Попробуйте снова или нажмите кнопку ниже.",
+                            reply_markup=request_phone_kb)
+        return
+
+    await state.update_data(client_phone=phone_number)
 
     await state.set_state(BookingState.select_date)
     kb = get_calendar()
-    await message.answer(f'Отлично! Столик бронирует <b>{client_name}</b>.',
-                         parse_mode="HTML")
     await message.answer('🗓 Выберите дату бронирования:',
                          reply_markup=kb)
 
