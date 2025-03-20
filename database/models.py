@@ -79,6 +79,8 @@ class Booking(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     tg_id: Mapped[int] = mapped_column(ForeignKey('user.tg_id'), nullable=False)
+    client_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    client_phone: Mapped[str] = mapped_column(String(20), nullable=False)
     select_date: Mapped[Date] = mapped_column(Date, nullable=False)
     select_time: Mapped[Time] = mapped_column(Time, nullable=False)
     select_guests: Mapped[int] = mapped_column(Integer, nullable=False)

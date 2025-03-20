@@ -35,6 +35,8 @@ async def orm_survey(session: AsyncSession, tg_id: int, data: dict):
 
 
 async def orm_booking(session: AsyncSession, tg_id: int, data: dict):
+    client_name = data.get("client_name")
+    client_phone = data.get("client_phone")
     select_date = data.get("select_date")
     select_time = data.get("select_time")
     select_guests = int(data.get("select_guests"))
@@ -43,25 +45,30 @@ async def orm_booking(session: AsyncSession, tg_id: int, data: dict):
     date_obj = datetime.strptime(select_date, "%d.%m.%Y").date()
     time_obj = datetime.strptime(select_time, "%H:%M").time()
 
-    stmt = select(Booking).where(Booking.tg_id == tg_id, Booking.client_confirm == False).order_by(Booking.id.desc())
+    stmt = select(Booking).where(Booking.tg_id == tg_id,
+                                 Booking.client_confirm == False).order_by(Booking.id.desc())
     result = await session.execute(stmt)
     booking = result.scalars().first()
 
     if booking:
+        booking.client_name = client_name
+        booking.client_phone = client_phone
         booking.select_date = date_obj
         booking.select_time = time_obj
         booking.select_guests = select_guests
         booking.additional_info = additional_info
-        booking.client_confirm = True  # Подтверждаем бронирование
+        booking.client_confirm = True
         await session.commit()
     else:
         booking = Booking(
             tg_id=tg_id,
+            client_name=client_name,
+            client_phone=client_phone,
             select_date=date_obj,
             select_time=time_obj,
             select_guests=select_guests,
             additional_info=additional_info,
-            client_confirm=True  # Подтверждаем бронирование сразу
+            client_confirm=True
         )
         session.add(booking)
         await session.commit()

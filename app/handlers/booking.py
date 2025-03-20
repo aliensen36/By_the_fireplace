@@ -64,10 +64,28 @@ kb_confirm = InlineKeyboardMarkup(inline_keyboard=[
 # Обработчик кнопки '📅🍽️ Забронировать стол'
 @booking_router.message(F.text == '📅🍽️ Забронировать стол')
 async def start_booking(message: Message, state: FSMContext):
+    await state.set_state(BookingState.client_name)
+    kb = get_calendar()
+    await message.answer('Отлично! Давайте забронируем столик.')
+    await message.answer('👤 Пожалуйста, введите имя, на кого будет бронирование.',
+                         reply_markup=reply_kb.cancel_keyboard)
+
+
+# Обработка имени клиента
+@booking_router.message(BookingState.client_name)
+async def get_client_name(message: Message, state: FSMContext):
+    client_name = message.text.strip()
+
+    if len(client_name) < 2:
+        await message.answer("Имя слишком короткое. Попробуйте еще раз:")
+        return
+
+    await state.update_data(client_name=client_name)
+
     await state.set_state(BookingState.select_date)
     kb = get_calendar()
-    await message.answer('Отлично! Давайте забронируем столик.\n\n',
-                         reply_markup=reply_kb.cancel_keyboard)
+    await message.answer(f'Отлично! Столик бронирует <b>{client_name}</b>.',
+                         parse_mode="HTML")
     await message.answer('🗓 Выберите дату бронирования:',
                          reply_markup=kb)
 
