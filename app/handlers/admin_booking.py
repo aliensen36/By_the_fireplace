@@ -5,7 +5,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.filters.chat_types import ChatTypeFilter, IsAdmin
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
-
 from app.fsm_states import BookingState
 from app.handlers import admin
 from database.orm_query import get_new_bookings, get_confirmed_bookings, get_canceled_bookings
@@ -67,10 +66,13 @@ async def new_orders(message: types.Message, session: AsyncSession):
         await message.answer(text='Заявка на бронирование стола\n\n'
                                   f" Номер <b>{b.id}</b>\n"
                                   f" Создана <b>{b.created}</b>\n\n"
+                                  f"👤 Стол бронируется на имя: <b>{b.client_name}</b>\n"
+                                  f"📱 Номер телефона: <b>{b.client_phone}</b>\n"
                                   f"📅 Дата: <b>{b.select_date.strftime('%d.%m.%Y')}</b>\n"
                                   f"⏰ Время: <b>{b.select_time}</b>\n"
                                   f"👥 Гостей: <b>{b.select_guests}</b>\n"
                                   f"📋 Доп. информация: <b>{b.additional_info}</b>\n\n"
+                                  "Заявка поступила с аккаунта:\n"
                                   f"👤 Имя: <b>{b.user.first_name}</b>\n"
                                   f"👤 Фамилия: <b>{b.user.last_name}</b>\n"
                                   f"🆔 <b>@{b.user.username}</b>",
@@ -109,6 +111,8 @@ async def confirm_booking(callback: CallbackQuery, session: AsyncSession):
         await callback.bot.send_message(
             booking.tg_id,
             text=f"✅ Ваша заявка на бронирование подтверждена!\n\n"
+                 f"👤 Стол бронируется на имя: <b>{booking.client_name}</b>\n"
+                 f"📱 Номер телефона: <b>{booking.client_phone}</b>\n"
                  f"📅 Дата: <b>{booking.select_date.strftime('%d.%m.%Y')}</b>\n"
                  f"⏰ Время: <b>{booking.select_time.strftime('%H:%M')}</b>\n"
                  f"👥 Гостей: <b>{booking.select_guests}</b>\n"
@@ -163,9 +167,11 @@ async def cancel_booking(callback: CallbackQuery, session: AsyncSession):
             await callback.bot.send_message(
                 booking.tg_id,
                 text=f"❌ Ваша заявка на бронирование была отменена администратором.\n\n"
-                     f"📅 Дата: {booking.select_date.strftime('%d.%m.%Y')}\n"
-                     f"⏰ Время: {booking.select_time}\n"
-                     f"👥 Гостей: {booking.select_guests}\n"
+                     f"👤 Стол бронировался на имя: <b>{booking.client_name}</b>\n"
+                     f"📱 Номер телефона: <b>{booking.client_phone}</b>\n"
+                     f"📅 Дата: <b>{booking.select_date.strftime('%d.%m.%Y')}</b>\n"
+                     f"⏰ Время: <b>{booking.select_time}</b>\n"
+                     f"👥 Гостей: <b>{booking.select_guests}</b>\n"
                      f"📋 Доп. информация: <b>{booking.additional_info}</b>\n\n"
                      f"💬 Комментарий администратора: <b>{admin_comment}</b>",
                 parse_mode="HTML",
@@ -225,10 +231,13 @@ async def confirmed_orders(message: types.Message, session: AsyncSession):
             text='✅ Подтвержденная заявка на бронирование стола\n\n'
                  f" Номер <b>{b.id}</b>\n"
                  f" Подтверждено <b>{b.admin_action_time.strftime('%d.%m.%Y %H:%M') if b.admin_action_time else '—'}</b>\n\n"
+                 f"👤 Стол бронируется на имя: <b>{b.client_name}</b>\n"
+                 f"📱 Номер телефона: <b>{b.client_phone}</b>\n"
                  f"📅 Дата: <b>{b.select_date.strftime('%d.%m.%Y')}</b>\n"
                  f"⏰ Время: <b>{b.select_time}</b>\n"
                  f"👥 Гостей: <b>{b.select_guests}</b>\n"
                  f"📋 Доп. информация: <b>{b.additional_info}</b>\n\n"
+                 "Заявка поступила с аккаунта:\n"
                  f"👤 Имя: <b>{b.user.first_name}</b>\n"
                  f"👤 Фамилия: <b>{b.user.last_name}</b>\n"
                  f"🆔 <b>@{b.user.username}</b>\n"
@@ -253,10 +262,13 @@ async def canceled_orders(message: types.Message, session: AsyncSession):
             text='❌ Отмененная заявка на бронирование стола\n\n'
                  f" Номер <b>{b.id}</b>\n"
                  f" Отменено <b>{b.admin_action_time.strftime('%d.%m.%Y %H:%M') if b.admin_action_time else '—'}</b>\n\n"
+                 f"👤 Стол бронируется на имя: <b>{b.client_name}</b>\n"
+                 f"📱 Номер телефона: <b>{b.client_phone}</b>\n"
                  f"📅 Дата: <b>{b.select_date.strftime('%d.%m.%Y')}</b>\n"
                  f"⏰ Время: <b>{b.select_time}</b>\n"
                  f"👥 Гостей: <b>{b.select_guests}</b>\n"
                  f"📋 Доп. информация: <b>{b.additional_info}</b>\n\n"
+                 "Заявка поступила с аккаунта:\n"
                  f"👤 Имя: <b>{b.user.first_name}</b>\n"
                  f"👤 Фамилия: <b>{b.user.last_name}</b>\n"
                  f"🆔 <b>@{b.user.username}</b>\n"
@@ -335,17 +347,19 @@ async def canceled_orders(message: types.Message, session: AsyncSession):
             text='❌ Отмененная заявка на бронирование стола\n\n'
                  f" Номер <b>{b.id}</b>\n"
                  f" Отменено <b>{b.admin_action_time.strftime('%d.%m.%Y %H:%M') if b.admin_action_time else '—'}</b>\n\n"
+                 f"👤 Стол бронируется на имя: <b>{b.client_name}</b>\n"
+                 f"📱 Номер телефона: <b>{b.client_phone}</b>\n"
                  f"📅 Дата: <b>{b.select_date.strftime('%d.%m.%Y')}</b>\n"
                  f"⏰ Время: <b>{b.select_time.strftime('%H:%M')}</b>\n"
                  f"👥 Гостей: <b>{b.select_guests}</b>\n"
                  f"📋 Доп. информация: <b>{b.additional_info}</b>\n\n"
+                 "Заявка поступила с аккаунта:\n"
                  f"👤 Имя: <b>{b.user.first_name}</b>\n"
                  f"👤 Фамилия: <b>{b.user.last_name}</b>\n"
                  f"🆔 <b>@{b.user.username}</b>\n"
                  f"💬 Комментарий администратора: <b>{b.admin_comment or '—'}</b>",
             parse_mode="HTML"
         )
-
 
 
 @admin_booking_router.message(F.text == '⬅️  Назад')

@@ -107,17 +107,19 @@ async def get_client_name(message: Message, state: FSMContext):
 @booking_router.message(BookingState.client_phone)
 async def get_client_phone(message: Message, state: FSMContext):
     if message.contact:
-        phone_number = message.contact.phone_number
+        client_phone = message.contact.phone_number
     else:
-        phone_number = message.text.strip()
+        client_phone = message.text.strip()
 
-    if not phone_number.startswith('+') or len(phone_number) < 10:
-        await message.answer("Номер телефона выглядит некорректным. Попробуйте снова или нажмите кнопку ниже.",
+    if not client_phone.startswith('+') or len(client_phone) < 10:
+        await message.answer("Номер телефона выглядит некорректным. "
+                             "Попробуйте снова или нажмите кнопку ниже.",
                             reply_markup=request_phone_kb)
         return
 
-    await state.update_data(client_phone=phone_number)
-
+    await state.update_data(client_phone=client_phone)
+    await message.answer(f'Вы указали номер телефона: <b>{client_phone}</b>',
+                         parse_mode="HTML")
     await state.set_state(BookingState.select_date)
     kb = get_calendar()
     await message.answer('🗓 Выберите дату бронирования:',
@@ -232,6 +234,8 @@ async def additional_info_text(message: Message, state: FSMContext):
     await state.update_data(additional_info=additional_info)
     data = await state.get_data()
     await message.answer(f"Готово! Данные Вашей брони:\n\n"
+                         f"👤 Стол бронируется на имя: <b>{data.get('client_name')}</b>\n"
+                         f"📱 Номер телефона: <b>{data.get('client_phone')}</b>\n"
                          f"📅 Дата: <b>{data.get('select_date')}</b>\n"
                          f"⏰ Время: <b>{data.get('select_time')}</b>\n"
                          f"👥 Гостей: <b>{data.get('select_guests')}</b>\n"
@@ -249,6 +253,8 @@ async def additional_info_skip(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     await callback.answer()
     await callback.message.edit_text("Готово! Данные Вашей брони:\n\n"
+                                     f"👤 Стол бронируется на имя: <b>{data.get('client_name')}</b>\n"
+                                     f"📱 Номер телефона: <b>{data.get('client_phone')}</b>\n"
                                      f"📅 Дата: <b>{data.get('select_date')}</b>\n"
                                      f"⏰ Время: <b>{data.get('select_time')}</b>\n"
                                      f"👥 Гостей: <b>{data.get('select_guests')}</b>\n"
@@ -283,10 +289,13 @@ async def client_confirm(callback: CallbackQuery, state: FSMContext, session: As
     try:
         await bot.send_message(chat_id=-1002551570110,
                                text="Заявка на бронирование стола:\n\n"
+                                    f"👤 Стол бронируется на имя: <b>{data.get('client_name')}</b>\n"
+                                    f"📱 Номер телефона: <b>{data.get('client_phone')}</b>\n"
                                     f"📅 Дата: <b>{data.get('select_date')}</b>\n"
                                     f"⏰ Время: <b>{data.get('select_time')}</b>\n"
                                     f"👥 Гостей: <b>{data.get('select_guests')}</b>\n"
                                     f"📋 Доп. информация: <b>{data.get('additional_info')}</b>\n\n"
+                                    "Заявка поступила с аккаунта:\n"
                                     f"👤 Имя: <b>{callback.from_user.first_name}</b>\n"
                                     f"👤 Фамилия: <b>{callback.from_user.last_name}</b>\n"
                                     f"🆔 <b>@{callback.from_user.username}</b>",
