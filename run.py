@@ -49,7 +49,7 @@ async def on_startup(bot):
     if run_param:
         await drop_db()
     await create_db()
-    logging.info("Бот успешно запущен. https://t.me/Advert202407_bot")
+    logging.info("Бот успешно запущен. https://t.me/By_the_fireplace_bot")
 
 async def main():
     dp.startup.register(on_startup)
