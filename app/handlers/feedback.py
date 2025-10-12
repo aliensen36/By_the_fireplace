@@ -44,9 +44,10 @@ async def receive_feedback_text(message: Message, state: FSMContext,
     # Отправка отзыва в группу админов
     bot = message.bot
     try:
-        await bot.send_message(chat_id=-1002551570110,
-                               text=f'📬 Новый отзыв от @{message.from_user.username 
-                                                         or tg_id}:\n\n{text_to_chat}')
+        await bot.send_message(
+            chat_id=-1002551570110,
+            text=f'📬 Новый отзыв от @{message.from_user.username or tg_id}:\n\n{text_to_chat}'
+        )
     except Exception as e:
         print(f'Не удалось отправить отзыв в чат: {e}')
 
