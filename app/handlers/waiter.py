@@ -26,7 +26,7 @@ async def receive_call_waiter_text(message: Message, state: FSMContext):
     # Отправка вызова в группу админов
     bot = message.bot
     try:
-        await bot.send_message(chat_id=-1002551570110,
+        await bot.send_message(chat_id=-1002638197567,
                                text=f"🛎️🛎️ <b>Вызов официанта</b> 🛎️🛎️\n\n"
                                     f"👤 Клиент @{username}:\n\n"
                                     f"{cw_text}",
