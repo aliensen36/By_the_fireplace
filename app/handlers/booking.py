@@ -287,7 +287,7 @@ async def client_confirm(callback: CallbackQuery, state: FSMContext, session: As
     # Отправка брони админам
     bot = callback.bot
     try:
-        await bot.send_message(chat_id=-1002551570110,
+        await bot.send_message(chat_id=-1002638197567,
                                text="Заявка на бронирование стола:\n\n"
                                     f"👤 Стол бронируется на имя: <b>{data.get('client_name')}</b>\n"
                                     f"📱 Номер телефона: <b>{data.get('client_phone')}</b>\n"

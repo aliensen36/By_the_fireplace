@@ -45,7 +45,7 @@ async def receive_feedback_text(message: Message, state: FSMContext,
     bot = message.bot
     try:
         await bot.send_message(
-            chat_id=-1002551570110,
+            chat_id=-1002638197567,
             text=f'📬 Новый отзыв от @{message.from_user.username or tg_id}:\n\n{text_to_chat}'
         )
     except Exception as e:
@@ -80,7 +80,7 @@ async def feedback_to_boss(message: Message, state: FSMContext,
     # Отправка отзыва директору
     bot = message.bot
     try:
-        await bot.send_message(chat_id=-1002551570110,
+        await bot.send_message(chat_id=-1002638197567,
                                text="‼️‼️ <b>Сообщение для директора</b> ‼️‼️\n"
                                     "@KateAlexandrova\n\n"
                                     f"📬 Новый отзыв от @{message.from_user.username 
